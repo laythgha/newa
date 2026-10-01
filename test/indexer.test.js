@@ -40,3 +40,10 @@ test("guessOwnerName reads the name from the top of the resume", () => {
   assert.equal(guessOwnerName("Experienced engineer with 10 years building web apps."), "");
   assert.equal(guessOwnerName(""), "");
 });
+
+test("parseQA falls back to question lines for unlabelled documents", () => {
+  assert.deepEqual(parseQA("1. Are you open to relocating?\nYes, within the US.\n\nWhat is your notice period?\nTwo weeks.\nNegotiable."), [
+    { question: "Are you open to relocating?", answer: "Yes, within the US." },
+    { question: "What is your notice period?", answer: "Two weeks.\nNegotiable." },
+  ]);
+});

@@ -67,6 +67,12 @@ A: Email jane@example.com.
 
 ## Updating the documents
 
+On the documents page (`/chatbot-docs`), click **Upload Word file** above either box to load a
+`.docx` (or `.txt`) file. Word headings become resume sections. The Q&A file can use `Q:` / `A:`
+lines, or simply put each question on its own line ending with `?` and the answer below it.
+Check the text, then click **Save**.
+
+
 The bot does **not** read the documents on each question. They are split into sections and
 indexed once; the index is saved to `data/index.json` with a fingerprint of the documents and
 reused until the documents change.

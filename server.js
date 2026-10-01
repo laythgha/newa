@@ -3,6 +3,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import express from "express";
+import { fileToText } from "./lib/convert.js";
 import Anthropic from "@anthropic-ai/sdk";
 import {
   DOCS_DIR,
@@ -23,7 +24,7 @@ const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5-5";
 // (updated whenever the resume changes).
 let detectedName = "";
 const ownerName = () => process.env.OWNER_NAME || detectedName || "the site owner";
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
+const ADMIN_TOKEN = (process.env.ADMIN_TOKEN || "").trim();
 // Address of the page for editing the resume and Q&A.
 const DOCS_PAGE = "/" + (process.env.DOCS_PAGE_PATH || "chatbot-docs").replace(/^\/+|\/+$/g, "");
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
@@ -196,9 +197,18 @@ function originAllowed(origin, req, { lock = false } = {}) {
 
 function adminAuthorized(req) {
   if (!ADMIN_TOKEN) return false;
-  const given = Buffer.from((req.get("authorization") || "").replace(/^Bearer\s+/i, ""));
+  // Trim, since a copied password often picks up a stray space or line break.
+  const given = Buffer.from((req.get("authorization") || "").replace(/^Bearer\s+/i, "").trim());
   const expected = Buffer.from(ADMIN_TOKEN);
   return given.length === expected.length && crypto.timingSafeEqual(given, expected);
+}
+
+function denyAdmin(res) {
+  return res.status(401).json({
+    error: ADMIN_TOKEN
+      ? "Wrong password. Copy it again (ADMIN_TOKEN on the server) and try once more."
+      : "No password is set on the server yet. Add ADMIN_TOKEN to the server's settings and restart it.",
+  });
 }
 
 // ---------- app ----------
@@ -396,15 +406,30 @@ function sendDemoAnswer(res, hits) {
 
 // ----- admin: view and replace the two documents -----
 
+// Converts an uploaded Word (.docx) or text file to plain text for the editor.
+// Nothing is saved until the documents page sends the text back with "Save".
+app.post("/api/admin/convert", express.raw({ type: "*/*", limit: "15mb" }), async (req, res) => {
+  if (!adminAuthorized(req)) return denyAdmin(res);
+  const filename = decodeURIComponent(req.get("x-filename") || "");
+  try {
+    const text = await fileToText(filename, req.body);
+    if (!text.trim()) return res.status(400).json({ error: "That file looks empty." });
+    res.json({ text });
+  } catch (err) {
+    console.error("[convert]", filename, err.message);
+    res.status(400).json({ error: err.message.startsWith("Please") || err.message.startsWith("Old") ? err.message : "Couldn't read that file. Is it a Word (.docx) document?" });
+  }
+});
+
 app.delete("/api/admin/site", (req, res) => {
-  if (!adminAuthorized(req)) return res.status(401).json({ error: "Wrong admin password" });
+  if (!adminAuthorized(req)) return denyAdmin(res);
   saveLockedSite(null);
   console.log("[site] unlocked by admin");
   res.json({ ok: true });
 });
 
 app.get("/api/admin/docs", (req, res) => {
-  if (!adminAuthorized(req)) return res.status(401).json({ error: "Wrong admin password" });
+  if (!adminAuthorized(req)) return denyAdmin(res);
   res.json({
     ...readSources(),
     indexBuiltAt: index.builtAt,
@@ -416,7 +441,7 @@ app.get("/api/admin/docs", (req, res) => {
 });
 
 app.put("/api/admin/docs", express.json({ limit: "2mb" }), (req, res) => {
-  if (!adminAuthorized(req)) return res.status(401).json({ error: "Wrong admin password" });
+  if (!adminAuthorized(req)) return denyAdmin(res);
   const { resume, qa } = req.body || {};
   const write = (names, text) => {
     // Overwrite whichever variant exists (resume.md / resume.txt), else the first one.

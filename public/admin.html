@@ -27,6 +27,15 @@
   button:disabled { opacity: .5; cursor: default; }
   #status { font-size: 14px; color: var(--muted); }
   #editor[hidden] { display: none; }
+  .error { color: #dc2626; font-size: 14px; margin: 10px 0 0; min-height: 0; }
+  .error:empty { display: none; }
+  .head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .head label { margin: 0; }
+  .upload { font-size: 13px; font-weight: 600; color: var(--accent); border: 1px solid var(--accent); border-radius: 8px; padding: 6px 12px; cursor: pointer; white-space: nowrap; }
+  .upload:hover { background: var(--accent); color: #fff; }
+  .card > .hint { display: block; margin: 0 0 8px; }
+  .pulse { animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 6px rgba(37,99,235,.25); } }
   .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   @media (max-width: 760px) { .facts { grid-template-columns: 1fr; } }
   .fact b { display: block; font-size: 13px; color: var(--muted); font-weight: 500; margin-bottom: 4px; }
@@ -38,15 +47,16 @@
 <body>
 <main>
   <h1>Chatbot documents</h1>
-  <p class="muted">Edit your resume and your questions &amp; answers, then save. The bot re-indexes them once, right away; it does not re-read them for each visitor.</p>
+  <p class="muted">Upload your resume and your questions &amp; answers as Word files (or type them in), check them, then save. The bot uses the new version right away.</p>
 
-  <div class="card">
-    <label for="token">Admin password <span class="hint">(the ADMIN_TOKEN set on the server)</span></label>
+  <form class="card" id="login">
+    <label for="token">Password</label>
     <div class="row">
       <input id="token" type="password" autocomplete="current-password">
-      <button id="load">Open documents</button>
+      <button id="load" type="submit">Open documents</button>
     </div>
-  </div>
+    <p id="msg" class="error" role="alert"></p>
+  </form>
 
   <div id="editor" hidden>
     <div class="card facts">
@@ -55,11 +65,15 @@
     </div>
     <div class="grid">
       <div class="card">
-        <label for="resume">Resume <span class="hint">plain text; start sections with "# Heading"</span></label>
+        <div class="head"><label for="resume">Resume</label>
+          <label class="upload">Upload Word file<input type="file" accept=".docx,.txt,.md" data-target="resume" hidden></label></div>
+        <p class="hint">Your name should be on the first line. Headings in the Word file become sections.</p>
         <textarea id="resume" spellcheck="true"></textarea>
       </div>
       <div class="card">
-        <label for="qa">Questions &amp; answers <span class="hint">"Q: ..." line, then "A: ..." line</span></label>
+        <div class="head"><label for="qa">Questions &amp; answers</label>
+          <label class="upload">Upload Word file<input type="file" accept=".docx,.txt,.md" data-target="qa" hidden></label></div>
+        <p class="hint">Each question on its own line ending with "?", with the answer below it. ("Q:" / "A:" lines also work.)</p>
         <textarea id="qa" spellcheck="true"></textarea>
       </div>
     </div>
@@ -68,14 +82,13 @@
       <span id="status"></span>
     </div>
   </div>
-  <p id="msg" class="muted"></p>
 </main>
 <script>
   const $ = (id) => document.getElementById(id);
   try { $("token").value = sessionStorage.getItem("adminToken") || ""; } catch {}
 
   async function call(method, body, url) {
-    const token = $("token").value;
+    const token = $("token").value.trim();
     try { sessionStorage.setItem("adminToken", token); } catch {}
     const res = await fetch(url || "/api/admin/docs", {
       method,
@@ -111,7 +124,8 @@
     } catch (e) { $("msg").textContent = e.message; }
   };
 
-  $("load").onclick = async () => {
+  $("login").onsubmit = async (e) => {
+    e.preventDefault();
     $("msg").textContent = "";
     try {
       const data = await call("GET");
@@ -119,11 +133,36 @@
       $("qa").value = data.qa;
       $("editor").hidden = false;
       showFacts(data);
+      $("token").value = $("token").value.trim();
       $("status").textContent = "Index last built " + new Date(data.indexBuiltAt).toLocaleString();
     } catch (e) { $("msg").textContent = e.message; }
   };
 
+  document.querySelectorAll(".upload input").forEach((input) => {
+    input.onchange = async () => {
+      const file = input.files[0];
+      input.value = "";
+      if (!file) return;
+      const box = $(input.dataset.target);
+      $("status").textContent = "Reading " + file.name + "...";
+      try {
+        const res = await fetch("/api/admin/convert", {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + $("token").value.trim(), "X-Filename": encodeURIComponent(file.name) },
+          body: file,
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || "Upload failed (" + res.status + ")");
+        box.value = data.text;
+        box.focus();
+        $("status").textContent = "Loaded " + file.name + ". Check the text, then click Save.";
+        $("save").classList.add("pulse");
+      } catch (e) { $("status").textContent = e.message; }
+    };
+  });
+
   $("save").onclick = async () => {
+    $("save").classList.remove("pulse");
     $("save").disabled = true;
     $("status").textContent = "Saving...";
     try {
