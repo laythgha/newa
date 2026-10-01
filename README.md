@@ -16,18 +16,24 @@ with wherever this server is hosted):
 
 ```html
 <script src="https://YOUR-BOT-SERVER/widget.js" defer
-        data-title="Ask about Jane"
-        data-greeting="Hi! Ask me anything about Jane's experience."></script>
+        data-name="Jane Doe"
+        data-subtitle="AI assistant · Answers from Jane's resume"></script>
 ```
 
-That's the whole install. The bubble sits in the bottom-right corner and doesn't move when the
-page scrolls. Optional settings on the same tag:
+That's the whole install. An "Ask about Jane" button sits in the bottom-right corner and doesn't
+move when the page scrolls. It opens a chat panel with suggested questions for recruiters; on
+phones the panel opens full screen. Optional settings on the same tag:
 
 | Attribute | What it does | Default |
 |---|---|---|
-| `data-title` | Text in the chat window header | `Ask me anything` |
-| `data-greeting` | First message the bot shows | a generic greeting |
-| `data-color` | Button and header color | `#2563eb` (blue) |
+| `data-name` | Person the bot answers about; used for the header, initials and default text | none |
+| `data-subtitle` | Line under the name in the header | `AI assistant` |
+| `data-avatar` | URL of a headshot to show instead of initials | initials |
+| `data-greeting` | First message the bot shows | built from `data-name` |
+| `data-suggestions` | Starter questions, separated by `\|` | tech stack, experience, open to roles, contact |
+| `data-label` | Text on the launcher button | `Ask about <first name>` |
+| `data-color` | Accent color (button, your messages, avatar) | `#1e293b` (slate) |
+| `data-theme` | `light`, `dark`, or `auto` (follows the visitor's system setting) | `light` |
 | `data-position` | `right` or `left` corner | `right` |
 
 The widget lives in its own shadow DOM, so your site's styles won't affect it and it won't
