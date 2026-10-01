@@ -272,6 +272,20 @@ app.get("/api/config", (req, res) => {
 });
 app.get("/health", (req, res) => res.json({ ok: true, indexBuiltAt: index.builtAt }));
 
+// The owner tools inside the chat widget call these from the owner's own site.
+// Every admin endpoint still requires the password.
+app.use("/api/admin", (req, res, next) => {
+  const origin = req.get("origin");
+  if (origin) {
+    res.set("Access-Control-Allow-Origin", origin);
+    res.set("Vary", "Origin");
+    res.set("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Filename");
+  }
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
+
 app.use("/api/chat", (req, res, next) => {
   // CORS headers go to every site so a blocked one gets a readable message; the
   // real check (and the first-site lock) happens in the POST handler below.
@@ -459,6 +473,8 @@ app.get("/api/admin/docs", (req, res) => {
   if (!adminAuthorized(req)) return denyAdmin(res);
   res.json({
     ...readSources(),
+    resumeSections: index.chunks.filter((c) => c.source === "resume").length,
+    qaPairs: index.chunks.filter((c) => c.source === "qa").length,
     indexBuiltAt: index.builtAt,
     name: ownerName(),
     nameSource: process.env.OWNER_NAME ? "setting" : detectedName ? "resume" : "none",

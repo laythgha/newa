@@ -241,6 +241,22 @@
     ".editor .x{position:absolute;top:10px;right:10px;width:36px;height:36px;border-radius:10px;background:rgba(15,23,42,.75);color:#fff;display:flex;align-items:center;justify-content:center}" +
     ".editor .x svg{width:18px;height:18px}" +
     "@media (max-width:520px){.editor{padding:0}.editor .frame{border-radius:0}}" +
+    // owner tools card inside the chat
+    ".ocard{margin-left:38px;padding:14px;border-radius:14px;background:var(--bg);border:1.5px dashed color-mix(in srgb,var(--a1) 45%,var(--border));font-size:13.5px;line-height:1.5;animation:rise .35s cubic-bezier(.2,.8,.2,1) both}" +
+    ".ocard h4{margin:0 0 4px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px}" +
+    ".ocard p{margin:0 0 10px;color:var(--muted)}" +
+    ".ocard .facts{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:0 0 12px;font-size:13px}" +
+    ".ocard .facts span:nth-child(odd){color:var(--muted)}" +
+    ".ocard .facts b{font-weight:600}" +
+    ".ocard input[type=password]{width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid var(--border);border-radius:10px;font:inherit;background:var(--canvas);color:var(--text);margin-bottom:8px}" +
+    ".ocard input[type=password]:focus{outline:none;border-color:var(--a1);box-shadow:0 0 0 3px color-mix(in srgb,var(--a1) 14%,transparent)}" +
+    ".ocard .btns{display:flex;flex-direction:column;gap:8px}" +
+    ".obtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:10px 12px;border-radius:10px;background:var(--grad);color:#fff;font-weight:600;font-size:13.5px;cursor:pointer}" +
+    ".obtn.alt{background:var(--canvas);color:var(--text);border:1px solid var(--border)}" +
+    ".obtn:disabled{opacity:.5;cursor:default}" +
+    ".ocard .err{color:#dc2626;margin:6px 0 0}" +
+    ".ocard .links{display:flex;justify-content:space-between;margin-top:10px;font-size:12.5px}" +
+    ".ocard .links button{color:var(--muted);text-decoration:underline;text-underline-offset:2px}" +
 
     // messages
     ".messages{flex:1;overflow-y:auto;padding:20px 16px 8px;display:flex;flex-direction:column;gap:14px;" +
@@ -589,6 +605,10 @@
   function submit(raw) {
     var text = String(raw || "").trim();
     if (!text || busy) return;
+    if (/^\/(admin|edit|owner)$/i.test(text)) {
+      input.value = "";
+      return showOwnerTools();
+    }
     input.value = "";
     input.style.height = "auto";
     var chips = list.querySelector(".suggest");
@@ -722,7 +742,132 @@
   function closeEditor() {
     if (editor) editor.classList.remove("show");
   }
-  shadow.querySelector(".hbtn.edit").addEventListener("click", openEditor);
+  // Owner tools inside the chat: type /admin in the chat (or click the pencil).
+  function adminFetch(method, path, body, headers) {
+    var h = { Authorization: "Bearer " + ownerToken() };
+    for (var k in headers || {}) h[k] = headers[k];
+    return fetch(SERVER + path, { method: method, headers: h, body: body }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (data) {
+        if (!r.ok) {
+          if (r.status === 401) setOwnerToken("");
+          throw new Error(data.error || "Something went wrong (" + r.status + ").");
+        }
+        return data;
+      });
+    });
+  }
+
+  function ownerCard() {
+    var old = list.querySelector(".ocard");
+    if (old) old.remove();
+    var card = document.createElement("div");
+    card.className = "ocard";
+    list.appendChild(card);
+    return card;
+  }
+
+  function showOwnerTools() {
+    setOpen(true);
+    if (!ownerToken()) return showOwnerLogin();
+    var card = ownerCard();
+    card.innerHTML = "<h4>🔒 Your documents</h4><p>Loading…</p>";
+    scrollDown();
+    adminFetch("GET", "/api/admin/docs").then(function (d) {
+      card.innerHTML =
+        "<h4>🔒 Your documents</h4><p>Only you can see this. Upload a Word file to replace your resume or your questions &amp; answers.</p>" +
+        '<div class="facts"><span>Name</span><b class="n"></b><span>Resume</span><b>' + d.resumeSections + " sections</b><span>Q&amp;A</span><b>" + d.qaPairs + " questions</b></div>" +
+        '<div class="btns"><button class="obtn" data-doc="resume">📄 Upload resume (Word)</button>' +
+        '<button class="obtn alt" data-doc="qa">💬 Upload Q&amp;A (Word)</button></div>' +
+        '<p class="err" hidden></p>' +
+        '<div class="links"><button class="adv">Open full editor</button><button class="out">Log out on this device</button></div>';
+      card.querySelector(".n").textContent = d.name;
+      card.querySelectorAll("[data-doc]").forEach(function (b) {
+        b.addEventListener("click", function () { pickFile(b.getAttribute("data-doc"), card); });
+      });
+      card.querySelector(".adv").addEventListener("click", openEditor);
+      card.querySelector(".out").addEventListener("click", function () {
+        setOwnerToken("");
+        card.remove();
+        addMessage("bot", "Logged out on this device. Type /admin to log in again.");
+      });
+      scrollDown();
+    }).catch(function (e) {
+      if (!ownerToken()) return showOwnerLogin(e.message);
+      card.innerHTML = "<h4>🔒 Your documents</h4><p class=\"err\"></p>";
+      card.querySelector(".err").textContent = e.message;
+    });
+  }
+
+  function showOwnerLogin(error) {
+    var card = ownerCard();
+    card.innerHTML =
+      "<h4>🔒 Owner login</h4><p>Enter your password to update the documents this assistant answers from.</p>" +
+      '<form><input type="password" autocomplete="current-password" placeholder="Password" aria-label="Password">' +
+      '<button class="obtn" type="submit">Unlock</button></form><p class="err" hidden></p>';
+    var form = card.querySelector("form");
+    var pw = card.querySelector("input");
+    var err = card.querySelector(".err");
+    if (error) { err.hidden = false; err.textContent = error; }
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var token = pw.value.trim();
+      if (!token) return;
+      setOwnerToken(token);
+      // Check the password, and tie the owner login to this website.
+      adminFetch("POST", "/api/admin/claim-site", JSON.stringify({ origin: location.origin }), { "Content-Type": "application/json" })
+        .then(function (r) {
+          if (!r.allowed) {
+            setOwnerToken("");
+            throw new Error("This assistant is set up for " + (r.site || "another website") + ", not this one.");
+          }
+          showOwnerTools();
+        })
+        .catch(function (e2) {
+          err.hidden = false;
+          err.textContent = e2.message;
+          pw.select();
+        });
+    });
+    scrollDown();
+    setTimeout(function () { pw.focus(); }, 100);
+  }
+
+  function pickFile(doc, card) {
+    var picker = document.createElement("input");
+    picker.type = "file";
+    picker.accept = ".docx,.txt,.md";
+    picker.addEventListener("change", function () {
+      var file = picker.files[0];
+      if (!file) return;
+      var buttons = card.querySelectorAll(".obtn");
+      var err = card.querySelector(".err");
+      buttons.forEach(function (b) { b.disabled = true; });
+      err.hidden = true;
+      var label = doc === "resume" ? "resume" : "questions & answers";
+      addMessage("bot", "Reading " + file.name + "…");
+      adminFetch("POST", "/api/admin/convert", file, { "X-Filename": encodeURIComponent(file.name) })
+        .then(function (r) {
+          var body = {};
+          body[doc] = r.text;
+          return adminFetch("PUT", "/api/admin/docs", JSON.stringify(body), { "Content-Type": "application/json" });
+        })
+        .then(function (r) {
+          var msg = doc === "resume"
+            ? "✅ Resume updated: " + r.resumeSections + " sections, name: " + r.name + "."
+            : "✅ Questions & answers updated: " + r.qaPairs + " questions.";
+          if (doc === "qa" && !r.qaPairs) msg = "⚠️ I couldn't find any questions in that file. Put each question on its own line ending with \"?\", with the answer below it.";
+          addMessage("bot", msg + (r.qaPairs || doc === "resume" ? " Try asking me something!" : ""));
+          showOwnerTools();
+        })
+        .catch(function (e) {
+          addMessage("bot", "Couldn't update your " + label + ": " + e.message);
+          buttons.forEach(function (b) { b.disabled = false; });
+        });
+    });
+    picker.click();
+  }
+
+  shadow.querySelector(".hbtn.edit").addEventListener("click", showOwnerTools);
   window.addEventListener("message", function (e) {
     if (e.origin !== SERVER || !e.data || typeof e.data.type !== "string") return;
     if (e.data.type === "rc-admin-login" && typeof e.data.token === "string") setOwnerToken(e.data.token);
@@ -735,11 +880,11 @@
       if (list.childElementCount) render();
     }
   });
-  window.ResumeChatbot.edit = openEditor;
+  window.ResumeChatbot.edit = function () { showOwnerTools(); };
 
   function mount() {
     document.body.appendChild(host);
-    if (/(^|[?&#])admin(=|&|$)/.test(location.search.slice(1) + "&" + location.hash.slice(1))) openEditor();
+    if (/(^|[?&#])admin(=|&|$)/.test(location.search.slice(1) + "&" + location.hash.slice(1))) showOwnerTools();
   }
   if (document.body) mount();
   else document.addEventListener("DOMContentLoaded", mount);

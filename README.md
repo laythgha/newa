@@ -65,18 +65,18 @@ Q: How can I contact you?
 A: Email jane@example.com.
 ```
 
-## Updating the documents from your own website
+## Updating the documents from the chat (owner)
 
-The owner can edit everything without leaving their site:
+Everything happens inside the chat on the owner's own site:
 
-1. Once, open your own site with `?admin` on the end (e.g. `https://yoursite.com/?admin`) and
-   enter the password. Keep "Keep me logged in on this device" ticked.
-2. From then on, on that device, the chat window on your site has a pencil button in its header.
-   Click it to open the editor (already logged in), upload Word files, and save.
+1. Open the chat on your site and type **/admin** as a message.
+2. Enter the password in the chat. Your documents appear right in the conversation, with
+   **Upload resume (Word)** and **Upload Q&A (Word)** buttons. Uploads are saved immediately.
+3. From then on, on that device, a pencil in the chat header brings these tools back. Visitors
+   never see it, and typing /admin still needs the password.
 
-Visitors never see the pencil: it only appears in a browser that has logged in. Logging in this
-way also locks the bot to that website if it wasn't locked yet. Use "Log out on this device" in the
-editor to remove the button.
+Logging in this way also locks the bot to that website if it wasn't locked yet. "Open full editor"
+shows the side-by-side text editor; "Log out on this device" removes the pencil.
 
 ## Updating the documents
 
