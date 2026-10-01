@@ -11,18 +11,18 @@ visitor's browser ──► widget.js ──► this server ──► search ind
 
 ## Adding it to your website
 
-Paste this just before `</body>` on every page where you want the bot (replace the address
-with wherever this server is hosted):
+Paste this one line just before `</body>` on every page where you want the bot (replace the
+address with wherever this server is hosted):
 
 ```html
-<script src="https://YOUR-BOT-SERVER/widget.js" defer
-        data-name="Jane Doe"
-        data-subtitle="AI assistant · Answers from Jane's resume"></script>
+<script src="https://YOUR-BOT-SERVER/widget.js" defer></script>
 ```
 
 That's the whole install. An "Ask about Jane" button sits in the bottom-right corner and doesn't
 move when the page scrolls. It opens a chat panel with suggested questions for recruiters; on
-phones the panel opens full screen. Optional settings on the same tag:
+phones the panel opens full screen. The name and look come from the server's `.env` (`OWNER_NAME` and the optional `WIDGET_*`
+settings), so the tag itself needs nothing else. You can also override any of them with
+attributes on the tag:
 
 | Attribute | What it does | Default |
 |---|---|---|

@@ -163,6 +163,20 @@ app.get("/robot.png", (req, res) => {
 });
 app.get("/admin", (req, res) => res.sendFile(path.join(here, "public", "admin.html")));
 app.get("/demo", (req, res) => res.sendFile(path.join(here, "public", "demo.html")));
+// Widget settings, so the site only needs the bare <script> tag.
+app.get("/api/config", (req, res) => {
+  res.set("Access-Control-Allow-Origin", "*");
+  res.set("Cache-Control", "public, max-age=300");
+  res.json({
+    name: process.env.OWNER_NAME || "",
+    subtitle: process.env.WIDGET_SUBTITLE || "",
+    greeting: process.env.WIDGET_GREETING || "",
+    suggestions: process.env.WIDGET_SUGGESTIONS || "",
+    color: process.env.WIDGET_COLOR || "",
+    color2: process.env.WIDGET_COLOR2 || "",
+    avatar: process.env.WIDGET_AVATAR || "",
+  });
+});
 app.get("/health", (req, res) => res.json({ ok: true, indexBuiltAt: index.builtAt }));
 
 app.use("/api/chat", (req, res, next) => {

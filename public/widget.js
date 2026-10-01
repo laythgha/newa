@@ -28,13 +28,36 @@
   var script =
     document.currentScript ||
     document.querySelector('script[src*="widget.js"]');
-  var cfg = (script && script.dataset) || {};
   var SERVER = new URL(script ? script.src : location.href).origin;
+  var attrs = {};
+  if (script) for (var k in script.dataset) attrs[k] = script.dataset[k];
+
+  // Calls made before the widget finishes loading are replayed once it's ready.
+  var early = [];
+  window.ResumeChatbot = {
+    open: function () { early.push(["open"]); },
+    close: function () { early.push(["close"]); },
+    ask: function (q) { early.push(["ask", q]); },
+  };
+
+  // The bare <script> tag is enough: the name and other settings come from the
+  // bot server's configuration. data-* attributes on the tag override them.
+  fetch(SERVER + "/api/config")
+    .then(function (r) { return r.ok ? r.json() : {}; })
+    .catch(function () { return {}; })
+    .then(function (serverCfg) {
+      var merged = {};
+      for (var a in serverCfg) if (serverCfg[a]) merged[a] = String(serverCfg[a]);
+      for (var b in attrs) merged[b] = attrs[b];
+      boot(merged);
+    });
+
+  function boot(cfg) {
 
   var NAME = (cfg.name || "").trim();
   var FIRST = NAME ? NAME.split(/\s+/)[0] : "";
   var TITLE = cfg.title || NAME || "Ask me anything";
-  var SUBTITLE = cfg.subtitle || "AI assistant";
+  var SUBTITLE = cfg.subtitle || (FIRST ? "AI assistant · Answers from " + FIRST + "'s resume" : "AI assistant");
   var GREETING =
     cfg.greeting ||
     (FIRST
@@ -150,22 +173,22 @@
     ".teaser .x svg{width:14px;height:14px}" +
 
     // robot mascot launcher
-    ".bot{position:fixed;bottom:10px;" + SIDE + ":14px;width:104px;aspect-ratio:245/300;cursor:pointer;border:none;background:none;padding:0;" +
+    ".mascot{position:fixed;bottom:10px;" + SIDE + ":14px;width:104px;aspect-ratio:245/300;cursor:pointer;border:none;background:none;padding:0;" +
     "-webkit-tap-highlight-color:transparent;transition:opacity .25s,transform .25s}" +
-    ".bot:focus-visible{outline:2px solid var(--a1);outline-offset:4px;border-radius:16px}" +
-    ".bot .body{position:absolute;inset:0;animation:float 3.6s ease-in-out infinite;transform-origin:50% 60%}" +
-    ".bot .fig{position:absolute;inset:0;transition:transform .35s cubic-bezier(.3,1.6,.5,1);filter:drop-shadow(0 0 10px rgba(56,189,248,.45)) drop-shadow(0 10px 14px rgba(15,23,42,.25));animation:glow 3.6s ease-in-out infinite}" +
-    ".bot img{width:100%;height:100%;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}" +
-    ".bot:hover .fig{transform:scale(1.08) rotate(-6deg)}" +
-    ".bot.hop .fig{animation:hop .6s cubic-bezier(.3,1.5,.5,1)}" +
+    ".mascot:focus-visible{outline:2px solid var(--a1);outline-offset:4px;border-radius:16px}" +
+    ".mascot .body{position:absolute;inset:0;animation:float 3.6s ease-in-out infinite;transform-origin:50% 60%}" +
+    ".mascot .fig{position:absolute;inset:0;transition:transform .35s cubic-bezier(.3,1.6,.5,1);filter:drop-shadow(0 0 10px rgba(56,189,248,.45)) drop-shadow(0 10px 14px rgba(15,23,42,.25));animation:glow 3.6s ease-in-out infinite}" +
+    ".mascot img{width:100%;height:100%;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}" +
+    ".mascot:hover .fig{transform:scale(1.08) rotate(-6deg)}" +
+    ".mascot.hop .fig{animation:hop .6s cubic-bezier(.3,1.5,.5,1)}" +
     ".eye{position:absolute;top:26.5%;width:8%;aspect-ratio:1;border-radius:50%;margin:-4% 0 0 -4%;" +
     "background:radial-gradient(circle at 40% 38%,#ffffff 0 18%,#a5f3fc 30%,#38bdf8 58%,#0284c7 100%);" +
     "box-shadow:0 0 6px 2px rgba(56,189,248,.9),0 0 14px 4px rgba(56,189,248,.45);" +
     "transform:translate(var(--ex,0),var(--ey,0));transition:transform .12s ease-out}" +
     ".eye.l{left:43.85%}.eye.r{left:63.85%}" +
     ".eye i{position:absolute;inset:0;border-radius:50%;background:inherit;transition:transform .09s}" +
-    ".bot.blink .eye{transform:translate(var(--ex,0),var(--ey,0)) scaleY(.12)}" +
-    ".bot:hover .eye{background:radial-gradient(circle at 40% 38%,#ffffff 0 22%,#cffafe 34%,#67e8f9 60%,#0891b2 100%)}" +
+    ".mascot.blink .eye{transform:translate(var(--ex,0),var(--ey,0)) scaleY(.12)}" +
+    ".mascot:hover .eye{background:radial-gradient(circle at 40% 38%,#ffffff 0 22%,#cffafe 34%,#67e8f9 60%,#0891b2 100%)}" +
     "@keyframes float{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-9px) rotate(2deg)}}" +
     "@keyframes glow{0%,100%{filter:drop-shadow(0 0 8px rgba(56,189,248,.35)) drop-shadow(0 10px 14px rgba(15,23,42,.25))}50%{filter:drop-shadow(0 0 16px rgba(56,189,248,.7)) drop-shadow(0 14px 16px rgba(15,23,42,.2))}}" +
     "@keyframes hop{0%{transform:scale(1)}30%{transform:translateY(-16px) scale(1.12) rotate(8deg)}60%{transform:translateY(0) scale(.95) rotate(-4deg)}100%{transform:scale(1)}}" +
@@ -177,9 +200,9 @@
     ".bubble span{display:block;color:#bae6fd;margin-top:1px}" +
     ".bubble::after{content:'';position:absolute;bottom:14px;" + SIDE + ":-7px;width:12px;height:12px;background:#0b1530;" +
     "border-" + (SIDE === "right" ? "right" : "left") + ":1.5px solid rgba(56,189,248,.7);border-bottom:1.5px solid rgba(56,189,248,.7);transform:rotate(" + (SIDE === "right" ? "-45deg" : "45deg") + ")}" +
-    ".bubble.show,.root.robot .bot:hover~.bubble{opacity:1;visibility:visible;transform:none;transition:opacity .25s,transform .3s cubic-bezier(.3,1.5,.5,1)}" +
+    ".bubble.show,.root.robot .mascot:hover~.bubble{opacity:1;visibility:visible;transform:none;transition:opacity .25s,transform .3s cubic-bezier(.3,1.5,.5,1)}" +
     ".root.robot:not(.open) .launcher{display:none}" +
-    ".root.robot.open .bot,.root.robot.open .bubble{opacity:0;visibility:hidden;pointer-events:none}" +
+    ".root.robot.open .mascot,.root.robot.open .bubble{opacity:0;visibility:hidden;pointer-events:none}" +
 
     // panel
     ".panel{position:fixed;bottom:96px;" + SIDE + ":24px;width:400px;height:min(660px,calc(100vh - 124px));" +
@@ -265,7 +288,7 @@
     ".hbtn.close{display:flex}" +
     ".root.open .launcher{display:none}" +
     ".launcher{bottom:16px;" + SIDE + ":16px}" +
-    ".bot{width:84px;bottom:8px;" + SIDE + ":8px}" +
+    ".mascot{width:84px;bottom:8px;" + SIDE + ":8px}" +
     ".bubble{bottom:70px;" + SIDE + ":94px}" +
     ".teaser{bottom:84px;" + SIDE + ":16px}}" +
     "@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}";
@@ -297,7 +320,7 @@
     "</form>" +
     "</section>" +
     (ROBOT
-      ? '<button class="bot" type="button" aria-label="' + esc(LABEL) + '"><div class="body"><div class="fig">' +
+      ? '<button class="mascot" type="button" aria-label="' + esc(LABEL) + '"><div class="body"><div class="fig">' +
         '<img alt="" src="' + esc(ROBOT_SRC) + '"><span class="eye l"></span><span class="eye r"></span></div></div></button>' +
         '<div class="bubble" aria-hidden="true"><b>Ask me anything!</b>' + (BUBBLE_SUB ? "<span>" + esc(BUBBLE_SUB) + "</span>" : "") + "</div>"
       : "") +
@@ -315,7 +338,7 @@
   var panel = shadow.querySelector(".panel");
   var launcher = shadow.querySelector(".launcher");
   var teaser = shadow.querySelector(".teaser");
-  var bot = shadow.querySelector(".bot");
+  var bot = shadow.querySelector(".mascot");
   var bubble = shadow.querySelector(".bubble");
   var list = shadow.querySelector(".messages");
   var form = shadow.querySelector("form");
@@ -647,10 +670,12 @@
       submit(question);
     },
   };
+  early.forEach(function (call) { window.ResumeChatbot[call[0]](call[1]); });
 
   function mount() {
     document.body.appendChild(host);
   }
   if (document.body) mount();
   else document.addEventListener("DOMContentLoaded", mount);
+  }
 })();
