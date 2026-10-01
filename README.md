@@ -38,6 +38,9 @@ phones the panel opens full screen. Optional settings on the same tag:
 | `data-theme` | `light`, `dark`, or `auto` (follows the visitor's system setting) | `light` |
 | `data-position` | `right` or `left` corner | `right` |
 
+Your own buttons can open the chat too: `onclick="ResumeChatbot.open()"`, or
+`ResumeChatbot.ask('Is Jane open to new roles?')` to open it with a question already asked.
+
 The widget lives in its own shadow DOM, so your site's styles won't affect it and it won't
 affect your site.
 

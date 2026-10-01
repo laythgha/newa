@@ -515,6 +515,18 @@
       });
   }
 
+  // Lets the page open the chat from its own buttons:
+  //   <button onclick="ResumeChatbot.open()">Ask my AI assistant</button>
+  // or ResumeChatbot.ask("What's your tech stack?") to open it with a question.
+  window.ResumeChatbot = {
+    open: function () { setOpen(true); },
+    close: function () { setOpen(false); },
+    ask: function (question) {
+      setOpen(true);
+      submit(question);
+    },
+  };
+
   function mount() {
     document.body.appendChild(host);
   }
