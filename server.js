@@ -26,7 +26,7 @@ let detectedName = "";
 const ownerName = () => process.env.OWNER_NAME || detectedName || "the site owner";
 const ADMIN_TOKEN = (process.env.ADMIN_TOKEN || "").trim();
 // Address of the page for editing the resume and Q&A.
-const DOCS_PAGE = "/" + (process.env.DOCS_PAGE_PATH || "chatbot-docs").replace(/^\/+|\/+$/g, "");
+const DOCS_PAGE = "/" + (process.env.DOCS_PAGE_PATH || "admin").replace(/^\/+|\/+$/g, "");
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
   .split(",")
   .map((s) => s.trim().replace(/\/$/, ""))
@@ -235,11 +235,13 @@ background:#fff;border:1px solid #e3e6ef;border-radius:16px;text-align:center}h1
 p{color:#64748b;margin:0 0 20px;font-size:14.5px}a{display:inline-block;margin:4px;padding:10px 18px;border-radius:10px;
 text-decoration:none;font-weight:600;font-size:14px;background:#4f46e5;color:#fff}a.alt{background:#eef0ff;color:#4f46e5}</style>
 </head><body><main><h1>Chatbot server is running</h1><p>Answering questions about ${ownerName()}.</p>
-<a href="/demo">Try the demo</a><a class="alt" href="${DOCS_PAGE}">Edit documents</a></main></body></html>`);
+<a href="/demo">Try the demo</a><a class="alt" href="${DOCS_PAGE}">Admin</a></main></body></html>`);
 });
 app.get(DOCS_PAGE, (req, res) => res.sendFile(path.join(here, "public", "admin.html")));
-// Old address of the documents page.
-if (DOCS_PAGE !== "/admin") app.get("/admin", (req, res) => res.redirect(301, DOCS_PAGE));
+// Earlier addresses of the documents page.
+for (const old of ["/admin", "/chatbot-docs"]) {
+  if (old !== DOCS_PAGE) app.get(old, (req, res) => res.redirect(301, DOCS_PAGE));
+}
 app.get("/demo", (req, res) => res.sendFile(path.join(here, "public", "demo.html")));
 // Widget settings, so the site only needs the bare <script> tag.
 app.get("/api/config", (req, res) => {
