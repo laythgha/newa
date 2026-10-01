@@ -214,6 +214,17 @@ app.get("/robot.png", (req, res) => {
   res.set("Cache-Control", "public, max-age=86400");
   res.sendFile(path.join(here, "public", "robot.png"));
 });
+app.get("/", (req, res) => {
+  res.type("html").send(`<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1"><title>Chatbot Server</title>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f6f7fb;color:#0f172a;
+font-family:Inter,ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif}main{max-width:420px;padding:32px 24px;
+background:#fff;border:1px solid #e3e6ef;border-radius:16px;text-align:center}h1{font-size:20px;margin:0 0 6px}
+p{color:#64748b;margin:0 0 20px;font-size:14.5px}a{display:inline-block;margin:4px;padding:10px 18px;border-radius:10px;
+text-decoration:none;font-weight:600;font-size:14px;background:#4f46e5;color:#fff}a.alt{background:#eef0ff;color:#4f46e5}</style>
+</head><body><main><h1>Chatbot server is running</h1><p>Answering questions about ${ownerName()}.</p>
+<a href="/demo">Try the demo</a><a class="alt" href="/admin">Admin</a></main></body></html>`);
+});
 app.get("/admin", (req, res) => res.sendFile(path.join(here, "public", "admin.html")));
 app.get("/demo", (req, res) => res.sendFile(path.join(here, "public", "demo.html")));
 // Widget settings, so the site only needs the bare <script> tag.
