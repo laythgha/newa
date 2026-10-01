@@ -1,0 +1,21 @@
+# Questions and answers for the website chatbot.
+# Write each question on a "Q:" line and its answer on an "A:" line.
+# Answers can continue onto the next lines. Lines starting with # are ignored.
+
+Q: Are you open to new opportunities?
+A: Yes. Jane is open to senior or staff engineering roles, full-time or contract.
+
+Q: Are you willing to relocate?
+A: Jane prefers remote work but would consider relocating for the right role in Austin, Denver, or Seattle.
+
+Q: What are your salary expectations?
+A: Jane prefers to discuss compensation directly. Please reach out at jane@example.com.
+
+Q: How can I contact you?
+A: Email jane@example.com or connect on LinkedIn at linkedin.com/in/janedoe.
+
+Q: What is your work authorization status?
+A: Jane is a U.S. citizen and does not need sponsorship.
+
+Q: What kind of team do you like working in?
+A: Small, product-focused teams that ship often and value code review and mentoring.

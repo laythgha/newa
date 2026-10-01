@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chatbot Documents</title>
+<style>
+  :root { --accent: #2563eb; --bg: #f3f4f6; --card: #fff; --text: #111827; --muted: #6b7280; --border: #d1d5db; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #111827; --card: #1f2937; --text: #f9fafb; --muted: #9ca3af; --border: #374151; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+  main { max-width: 1000px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  p.muted { color: var(--muted); margin: 0 0 20px; font-size: 14px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  label { display: block; font-weight: 600; margin-bottom: 6px; }
+  .hint { color: var(--muted); font-size: 13px; font-weight: 400; }
+  input, textarea { width: 100%; font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
+  textarea { min-height: 320px; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; line-height: 1.5; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .row input { flex: 1; min-width: 200px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  button { font: inherit; background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 9px 16px; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: default; }
+  #status { font-size: 14px; color: var(--muted); }
+  #editor[hidden] { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Chatbot documents</h1>
+  <p class="muted">Edit your resume and your questions &amp; answers, then save. The bot re-indexes them once, right away; it does not re-read them for each visitor.</p>
+
+  <div class="card">
+    <label for="token">Admin password <span class="hint">(the ADMIN_TOKEN set on the server)</span></label>
+    <div class="row">
+      <input id="token" type="password" autocomplete="current-password">
+      <button id="load">Open documents</button>
+    </div>
+  </div>
+
+  <div id="editor" hidden>
+    <div class="grid">
+      <div class="card">
+        <label for="resume">Resume <span class="hint">plain text; start sections with "# Heading"</span></label>
+        <textarea id="resume" spellcheck="true"></textarea>
+      </div>
+      <div class="card">
+        <label for="qa">Questions &amp; answers <span class="hint">"Q: ..." line, then "A: ..." line</span></label>
+        <textarea id="qa" spellcheck="true"></textarea>
+      </div>
+    </div>
+    <div class="row">
+      <button id="save">Save and update the bot</button>
+      <span id="status"></span>
+    </div>
+  </div>
+  <p id="msg" class="muted"></p>
+</main>
+<script>
+  const $ = (id) => document.getElementById(id);
+  try { $("token").value = sessionStorage.getItem("adminToken") || ""; } catch {}
+
+  async function call(method, body) {
+    const token = $("token").value;
+    try { sessionStorage.setItem("adminToken", token); } catch {}
+    const res = await fetch("/api/admin/docs", {
+      method,
+      headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Request failed (" + res.status + ")");
+    return data;
+  }
+
+  $("load").onclick = async () => {
+    $("msg").textContent = "";
+    try {
+      const data = await call("GET");
+      $("resume").value = data.resume;
+      $("qa").value = data.qa;
+      $("editor").hidden = false;
+      $("status").textContent = "Index last built " + new Date(data.indexBuiltAt).toLocaleString();
+    } catch (e) { $("msg").textContent = e.message; }
+  };
+
+  $("save").onclick = async () => {
+    $("save").disabled = true;
+    $("status").textContent = "Saving...";
+    try {
+      const r = await call("PUT", { resume: $("resume").value, qa: $("qa").value });
+      $("status").textContent = `Saved. The bot now knows ${r.resumeSections} resume sections and ${r.qaPairs} Q&A pairs.`;
+    } catch (e) { $("status").textContent = e.message; }
+    $("save").disabled = false;
+  };
+</script>
+</body>
+</html>

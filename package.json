@@ -1,0 +1,21 @@
+{
+  "name": "resume-chatbot",
+  "version": "1.0.0",
+  "description": "Floating website chatbot that answers questions from a resume and a Q&A document (RAG + Claude).",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js",
+    "reindex": "node --env-file-if-exists=.env lib/reindex.js",
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0",
+    "express": "^5.2.1"
+  }
+}
