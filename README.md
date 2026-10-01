@@ -190,7 +190,9 @@ Any Node host works (Railway, Fly.io, a VPS). Build command `npm install`, start
 
 ### Cost and abuse protection
 
-- Each visitor IP is limited to 30 messages per 10 minutes.
+- Each visitor IP is limited to 30 messages per 10 minutes and 40 per day (`DAILY_LIMIT_PER_VISITOR`).
+- The whole bot answers at most 300 messages per day (`DAILY_LIMIT_TOTAL`); after that it asks visitors to contact the owner directly. Counters reset at midnight UTC (and on restart).
+- Requests without a browser `Origin` header (plain scripts) are refused.
 - Messages are capped at 2,000 characters, and replies at 4,096 tokens.
 - Claude runs at low effort, which suits short factual answers.
 - If Claude declines a request on safety grounds, the API automatically retries it on a

@@ -38,6 +38,9 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
 const MAX_HISTORY = 12; // messages kept from the conversation
 const MAX_MESSAGE_CHARS = 2000;
 const RATE_LIMIT = { windowMs: 10 * 60 * 1000, max: 30 }; // per visitor IP
+// Daily caps keep API costs bounded: per visitor IP, and for the whole bot.
+const DAILY_LIMIT_PER_VISITOR = Number(process.env.DAILY_LIMIT_PER_VISITOR) || 40;
+const DAILY_LIMIT_TOTAL = Number(process.env.DAILY_LIMIT_TOTAL) || 300;
 
 // Which AI service writes the answers:
 //   ABACUS_API_KEY set    -> Abacus.AI RouteLLM (OpenAI-style chat completions API)
@@ -158,6 +161,20 @@ function rateLimited(ip) {
   requestLog.set(ip, recent);
   return recent.length > RATE_LIMIT.max;
 }
+// Daily counters reset at midnight UTC.
+const daily = { day: "", total: 0, perVisitor: new Map() };
+function dailyLimitHit(ip) {
+  const today = new Date().toISOString().slice(0, 10);
+  if (daily.day !== today) Object.assign(daily, { day: today, total: 0, perVisitor: new Map() });
+  if (daily.total >= DAILY_LIMIT_TOTAL) return "total";
+  const mine = daily.perVisitor.get(ip) || 0;
+  if (mine >= DAILY_LIMIT_PER_VISITOR) return "visitor";
+  daily.total += 1;
+  daily.perVisitor.set(ip, mine + 1);
+  if (daily.total === DAILY_LIMIT_TOTAL) console.warn(`[limits] daily total of ${DAILY_LIMIT_TOTAL} chats reached`);
+  return null;
+}
+
 setInterval(() => {
   const now = Date.now();
   for (const [ip, times] of requestLog) {
@@ -307,8 +324,18 @@ app.post("/api/chat", express.json({ limit: "64kb" }), async (req, res) => {
   if (origin && !originAllowed(origin, req, { lock: true })) {
     return res.status(403).json({ error: "This chat isn't enabled for this website." });
   }
+  // Browsers always send Origin with these requests; plain scripts usually don't.
+  if (!origin) return res.status(403).json({ error: "This chat only works on its website." });
   if (rateLimited(req.ip)) {
     return res.status(429).json({ error: "Too many messages. Please try again in a few minutes." });
+  }
+  const limit = dailyLimitHit(req.ip);
+  if (limit) {
+    return res.status(429).json({
+      error: limit === "total"
+        ? `The assistant is resting for today. Please contact ${ownerName()} directly.`
+        : `You've reached today's question limit. Please contact ${ownerName()} directly, or come back tomorrow.`,
+    });
   }
   const messages = cleanMessages(req.body);
   if (!messages) return res.status(400).json({ error: "Invalid messages" });
