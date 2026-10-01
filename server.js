@@ -28,11 +28,17 @@ const MAX_HISTORY = 12; // messages kept from the conversation
 const MAX_MESSAGE_CHARS = 2000;
 const RATE_LIMIT = { windowMs: 10 * 60 * 1000, max: 30 }; // per visitor IP
 
-// Without an API key the server runs in demo mode: the widget, admin page and
-// document search all work, and the bot replies with the best-matching excerpt
-// instead of a Claude-written answer.
-const DEMO_MODE = !process.env.ANTHROPIC_API_KEY;
-const client = DEMO_MODE ? null : new Anthropic();
+// Which AI service writes the answers:
+//   ABACUS_API_KEY set    -> Abacus.AI RouteLLM (OpenAI-style chat completions API)
+//   ANTHROPIC_API_KEY set -> Claude, through the Anthropic SDK
+//   neither               -> demo mode: the widget, admin page and document search all
+//                            work, and the bot replies with the best-matching excerpt.
+const ABACUS_API_KEY = process.env.ABACUS_API_KEY || process.env.abacus_api_key || "";
+const ABACUS_BASE_URL = (process.env.ABACUS_BASE_URL || "https://routellm.abacus.ai/v1").replace(/\/$/, "");
+const ABACUS_MODEL = process.env.ABACUS_MODEL || "route-llm";
+const PROVIDER = ABACUS_API_KEY ? "abacus" : process.env.ANTHROPIC_API_KEY ? "anthropic" : "demo";
+const DEMO_MODE = PROVIDER === "demo";
+const client = PROVIDER === "anthropic" ? new Anthropic() : null;
 
 // ---------- index (built once, rebuilt only when the documents change) ----------
 
@@ -194,48 +200,97 @@ app.post("/api/chat", express.json({ limit: "64kb" }), async (req, res) => {
   res.flushHeaders();
   const send = (event) => res.write(`data: ${JSON.stringify(event)}\n\n`);
 
-  const stream = client.beta.messages.stream({
-    model: MODEL,
-    max_tokens: 4096,
-    output_config: { effort: "low" },
-    // If the model declines a request, the API retries it on a fallback model.
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
-    system: SYSTEM_PROMPT,
-    messages: apiMessages,
-  });
+  const controller = new AbortController();
   res.on("close", () => {
-    if (!res.writableEnded) stream.abort();
+    if (!res.writableEnded) controller.abort();
   });
 
   try {
-    for await (const event of stream) {
-      if (event.type === "content_block_start" && event.content_block.type === "fallback") {
-        // A different model takes over from here; discard the partial answer.
-        send({ type: "reset" });
-      } else if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-        send({ type: "text", text: event.delta.text });
-      }
-    }
-    const final = await stream.finalMessage();
-    if (final.stop_reason === "refusal") {
-      send({ type: "reset" });
-      send({ type: "text", text: `Sorry, I can't help with that. Feel free to ask about ${OWNER_NAME}'s experience or skills.` });
-    }
+    if (PROVIDER === "abacus") await streamAbacus(apiMessages, send, controller.signal);
+    else await streamClaude(apiMessages, send, controller.signal);
     send({ type: "done" });
   } catch (err) {
-    if (stream.controller.signal.aborted) return; // visitor closed the page
+    if (controller.signal.aborted) return; // visitor closed the page
     if (err instanceof Anthropic.RateLimitError) {
       console.error("[chat] rate limited by API:", err.message);
     } else if (err instanceof Anthropic.APIError) {
       console.error(`[chat] API error ${err.status}:`, err.message);
     } else {
-      console.error("[chat] error:", err);
+      console.error("[chat] error:", err.message || err);
     }
     send({ type: "error", message: "Sorry, something went wrong. Please try again." });
   }
   res.end();
 });
+
+async function streamClaude(apiMessages, send, signal) {
+  const stream = client.beta.messages.stream(
+    {
+      model: MODEL,
+      max_tokens: 4096,
+      output_config: { effort: "low" },
+      // If the model declines a request, the API retries it on a fallback model.
+      betas: ["server-side-fallback-2026-07-01"],
+      fallbacks: "default",
+      system: SYSTEM_PROMPT,
+      messages: apiMessages,
+    },
+    { signal },
+  );
+  for await (const event of stream) {
+    if (event.type === "content_block_start" && event.content_block.type === "fallback") {
+      // A different model takes over from here; discard the partial answer.
+      send({ type: "reset" });
+    } else if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
+      send({ type: "text", text: event.delta.text });
+    }
+  }
+  const final = await stream.finalMessage();
+  if (final.stop_reason === "refusal") {
+    send({ type: "reset" });
+    send({ type: "text", text: `Sorry, I can't help with that. Feel free to ask about ${OWNER_NAME}'s experience or skills.` });
+  }
+}
+
+// Abacus.AI RouteLLM speaks the OpenAI chat completions format and streams
+// server-sent events: "data: {choices:[{delta:{content}}]}" lines, ending with "data: [DONE]".
+async function streamAbacus(apiMessages, send, signal) {
+  const res = await fetch(`${ABACUS_BASE_URL}/chat/completions`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${ABACUS_API_KEY}` },
+    body: JSON.stringify({
+      model: ABACUS_MODEL,
+      stream: true,
+      max_tokens: 1500,
+      messages: [{ role: "system", content: SYSTEM_PROMPT }, ...apiMessages],
+    }),
+    signal,
+  });
+  if (!res.ok || !res.body) {
+    const detail = (await res.text().catch(() => "")).slice(0, 300);
+    throw new Error(`Abacus API error ${res.status}: ${detail}`);
+  }
+  const decoder = new TextDecoder();
+  let buffer = "";
+  for await (const chunk of res.body) {
+    buffer += decoder.decode(chunk, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop();
+    for (const line of lines) {
+      const data = line.trim().replace(/^data:\s*/, "");
+      if (!line.trim().startsWith("data:") || !data || data === "[DONE]") continue;
+      let json;
+      try {
+        json = JSON.parse(data);
+      } catch {
+        continue;
+      }
+      if (json.error) throw new Error(`Abacus API error: ${JSON.stringify(json.error).slice(0, 300)}`);
+      const text = json.choices?.[0]?.delta?.content;
+      if (text) send({ type: "text", text });
+    }
+  }
+}
 
 function sendDemoAnswer(res, hits) {
   const top = hits[0];
@@ -277,7 +332,8 @@ app.put("/api/admin/docs", express.json({ limit: "2mb" }), (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Chatbot server on http://localhost:${PORT}  (demo page: /demo, admin: /admin)`);
-  if (DEMO_MODE) console.warn("ANTHROPIC_API_KEY is not set: running in DEMO MODE (no Claude answers).");
+  if (DEMO_MODE) console.warn("No ABACUS_API_KEY or ANTHROPIC_API_KEY set: running in DEMO MODE (no AI answers).");
+  else console.log(`Answers by: ${PROVIDER === "abacus" ? `Abacus.AI (${ABACUS_MODEL})` : `Claude (${MODEL})`}`);
   if (!ADMIN_TOKEN) console.warn("ADMIN_TOKEN is not set: the /admin page is disabled.");
   if (!ALLOWED_ORIGINS.length) console.warn("ALLOWED_ORIGINS is not set: any website can use this bot.");
 });

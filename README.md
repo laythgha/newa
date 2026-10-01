@@ -2,7 +2,7 @@
 
 A floating chat bubble for a personal website. Visitors ask questions and the bot
 answers from two documents: your **resume** and a list of **questions & answers**.
-It runs on Claude (Sonnet 5.5) with a small retrieval (RAG) layer in front.
+It runs on Abacus.AI RouteLLM or Claude (Sonnet 5.5), with a small retrieval (RAG) layer in front.
 
 ```
 visitor's browser ──► widget.js ──► this server ──► search index ──► Claude
@@ -83,7 +83,7 @@ To update, use either way:
 
 ## Running it
 
-Requires Node.js 22 or newer and an Anthropic API key.
+Requires Node.js 22 or newer, and an Abacus.AI or Anthropic API key for AI-written answers.
 
 ```bash
 npm install
@@ -94,7 +94,7 @@ npm start
 Open http://localhost:3000/demo to try the bubble on a sample page, and
 http://localhost:3000/admin to edit the documents.
 
-**No API key yet?** Leave `ANTHROPIC_API_KEY` empty and the server starts in demo mode:
+**No API key yet?** Leave `ABACUS_API_KEY` and `ANTHROPIC_API_KEY` empty and the server starts in demo mode:
 the widget, admin page and document search all work, and the bot replies with the
 best-matching Q&A answer or resume section instead of a Claude-written answer. Add the key
 and restart to switch to real answers.
@@ -103,7 +103,9 @@ and restart to switch to real answers.
 
 | Variable | Purpose |
 |---|---|
-| `ANTHROPIC_API_KEY` | Your Claude API key. Without it the bot runs in demo mode |
+| `ABACUS_API_KEY` | Abacus.AI RouteLLM key. If set, Abacus writes the answers |
+| `ABACUS_MODEL` | Model on Abacus (default `route-llm`, which picks a model per question) |
+| `ANTHROPIC_API_KEY` | Claude API key, used when no Abacus key is set. With neither key the bot runs in demo mode |
 | `ADMIN_TOKEN` | Password for `/admin`. If empty, the admin page is disabled |
 | `ALLOWED_ORIGINS` | Comma-separated site addresses allowed to use the bot, e.g. `https://janedoe.com,https://www.janedoe.com`. Set this in production so other sites can't use your API key |
 | `OWNER_NAME` | Your name, so the bot refers to you correctly |
