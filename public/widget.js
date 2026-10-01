@@ -85,6 +85,8 @@
   var TEASER_KEY = STORAGE_KEY + ":teaser";
   var ROBOT = cfg.launcher !== "pill";
   var ROBOT_SRC = cfg.robot || SERVER + "/robot.png";
+  // The default robot's waving forearm is a separate image layer, rotated around its elbow.
+  var ROBOT_ARM = cfg.robot ? "" : SERVER + "/robot-arm.png";
   var BUBBLE_SUB = cfg.teaser && cfg.teaser !== "off" ? cfg.teaser : FIRST ? "about " + FIRST + "'s experience & skills" : "";
   var REDUCED_MOTION = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -180,6 +182,10 @@
     ".mascot .body{position:absolute;inset:0;animation:float 3.6s ease-in-out infinite;transform-origin:50% 60%}" +
     ".mascot .fig{position:absolute;inset:0;transition:transform .35s cubic-bezier(.3,1.6,.5,1);filter:drop-shadow(0 0 10px rgba(56,189,248,.45)) drop-shadow(0 10px 14px rgba(15,23,42,.25));animation:glow 3.6s ease-in-out infinite}" +
     ".mascot img{width:100%;height:100%;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}" +
+    ".mascot img.arm{position:absolute;inset:0;transform-origin:28.08% 50%;animation:wave 4.5s ease-in-out infinite}" +
+    ".mascot:hover img.arm{animation:wave-fast 1s ease-in-out infinite}" +
+    "@keyframes wave{0%,46%,100%{transform:rotate(0)}8%{transform:rotate(16deg)}16%{transform:rotate(2deg)}24%{transform:rotate(16deg)}32%{transform:rotate(2deg)}40%{transform:rotate(12deg)}}" +
+    "@keyframes wave-fast{0%,100%{transform:rotate(0)}50%{transform:rotate(16deg)}}" +
     ".mascot:hover .fig{transform:scale(1.08) rotate(-6deg)}" +
     ".mascot.hop .fig{animation:hop .6s cubic-bezier(.3,1.5,.5,1)}" +
     ".eye{position:absolute;top:26.5%;width:8%;aspect-ratio:1;border-radius:50%;margin:-4% 0 0 -4%;" +
@@ -348,7 +354,7 @@
     "</section>" +
     (ROBOT
       ? '<button class="mascot" type="button" aria-label="' + esc(LABEL) + '"><div class="body"><div class="fig">' +
-        '<img alt="" src="' + esc(ROBOT_SRC) + '"><span class="eye l"></span><span class="eye r"></span></div></div></button>' +
+        '<img alt="" src="' + esc(ROBOT_SRC) + '">' + (ROBOT_ARM ? '<img alt="" class="arm" src="' + esc(ROBOT_ARM) + '">' : "") + '<span class="eye l"></span><span class="eye r"></span></div></div></button>' +
         '<div class="bubble" aria-hidden="true"><b>Ask me anything!</b>' + (BUBBLE_SUB ? "<span>" + esc(BUBBLE_SUB) + "</span>" : "") + "</div>"
       : "") +
     (TEASER && !ROBOT

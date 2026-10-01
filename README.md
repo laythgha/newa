@@ -31,7 +31,7 @@ attributes on the tag:
 | `data-avatar` | URL of a headshot to show instead of initials | initials |
 | `data-greeting` | First message the bot shows | built from `data-name` |
 | `data-suggestions` | Starter questions, separated by `\|` | tech stack, experience, open to roles, contact |
-| `data-launcher` | `robot` for the animated robot mascot (eyes follow the cursor, blinks, hops when clicked), or `pill` for a plain gradient button | `robot` |
+| `data-launcher` | `robot` for the animated robot mascot (waves, eyes follow the cursor, blinks, hops when clicked), or `pill` for a plain gradient button | `robot` |
 | `data-robot` | URL of a different mascot image (transparent PNG) | `robot.png` on the bot server |
 | `data-label` | Accessible name of the launcher (and its text in `pill` mode) | `Ask about <first name>` |
 | `data-teaser` | Second line of the speech bubble that pops up after a few seconds (once per visit), or `off` | a short "Hiring? Ask me..." line |

@@ -231,10 +231,12 @@ app.get("/widget.js", (req, res) => {
   res.set("Cache-Control", "public, max-age=300");
   res.sendFile(path.join(here, "public", "widget.js"));
 });
-app.get("/robot.png", (req, res) => {
-  res.set("Cache-Control", "public, max-age=86400");
-  res.sendFile(path.join(here, "public", "robot.png"));
-});
+for (const img of ["robot.png", "robot-arm.png"]) {
+  app.get("/" + img, (req, res) => {
+    res.set("Cache-Control", "public, max-age=3600");
+    res.sendFile(path.join(here, "public", img));
+  });
+}
 app.get("/", (req, res) => {
   if (PORTFOLIO) return res.sendFile(path.join(here, "public", "portfolio.html"));
   res.type("html").send(`<!doctype html><html lang="en"><head><meta charset="utf-8">
