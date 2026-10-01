@@ -259,7 +259,7 @@ if (PORTFOLIO) {
 // Widget settings, so the site only needs the bare <script> tag.
 app.get("/api/config", (req, res) => {
   res.set("Access-Control-Allow-Origin", "*");
-  res.set("Cache-Control", "public, max-age=60");
+  res.set("Cache-Control", "no-cache");
   res.json({
     name: process.env.OWNER_NAME || detectedName,
     subtitle: process.env.WIDGET_SUBTITLE || "",

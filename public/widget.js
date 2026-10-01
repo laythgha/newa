@@ -852,6 +852,9 @@
           return adminFetch("PUT", "/api/admin/docs", JSON.stringify(body), { "Content-Type": "application/json" });
         })
         .then(function (r) {
+          if (doc === "resume" && r.name && !attrs.name) {
+            shadow.querySelector(".who h2").textContent = r.name; // full refresh happens on next page load
+          }
           var msg = doc === "resume"
             ? "✅ Resume updated: " + r.resumeSections + " sections, name: " + r.name + "."
             : "✅ Questions & answers updated: " + r.qaPairs + " questions.";
