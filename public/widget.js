@@ -78,6 +78,9 @@
   var ACCENT2 = cfg.color2 || (cfg.color ? cfg.color : "#7c3aed");
   var THEME = ["dark", "auto", "navy"].indexOf(cfg.theme) >= 0 ? cfg.theme : "light";
   var BOOKING_URL = /^https:\/\//.test(cfg.bookingUrl || "") ? cfg.bookingUrl : "";
+  // Developer credit at the bottom of the chat window ("off" hides it).
+  var CREDIT_NAME = cfg.creditName === "off" ? "" : cfg.creditName || "Layth Gharbia";
+  var CREDIT_URL = /^https:\/\//.test(cfg.creditUrl || "") ? cfg.creditUrl : "";
   var SIDE = cfg.position === "left" ? "left" : "right";
   var INITIALS = NAME
     ? NAME.split(/\s+/).map(function (w) { return w[0]; }).slice(0, 2).join("").toUpperCase()
@@ -328,6 +331,9 @@
     ".send svg{width:18px;height:18px}" +
     ".send:disabled{opacity:.35;cursor:default}" +
     ".note{display:flex;align-items:center;justify-content:center;gap:5px;margin-top:8px;font-size:11px;color:var(--muted);line-height:1.4}" +
+    ".credit{margin-top:3px;text-align:center;font-size:10.5px;color:var(--muted);opacity:.85}" +
+    ".credit a{color:inherit;font-weight:600;text-decoration:none;border-bottom:1px solid color-mix(in srgb,var(--muted) 50%,transparent)}" +
+    ".credit a:hover{color:var(--a1);border-color:var(--a1)}" +
     ".note svg{width:12px;height:12px;color:var(--a1)}" +
 
     // phones: full-screen panel
@@ -367,6 +373,10 @@
     '<div class="box"><textarea rows="1" placeholder="Ask about skills, projects, availability..." aria-label="Your question"></textarea>' +
     '<button class="send" type="submit" aria-label="Send" disabled>' + ICONS.send + "</button></div>" +
     '<p class="note">' + ICONS.sparkle + "AI answers based on " + (FIRST ? esc(FIRST) + "'s" : "the") + " resume · verify important details</p>" +
+    (CREDIT_NAME
+      ? '<p class="credit">Developed by ' +
+        (CREDIT_URL ? '<a href="' + esc(CREDIT_URL) + '" target="_blank" rel="noopener">' + esc(CREDIT_NAME) + "</a>" : esc(CREDIT_NAME)) + "</p>"
+      : "") +
     "</form>" +
     "</section>" +
     (ROBOT

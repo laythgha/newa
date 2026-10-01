@@ -125,6 +125,7 @@ and restart to switch to real answers.
 | Variable | Purpose |
 |---|---|
 | `BOOKING_URL` | Optional scheduling link (e.g. Google Calendar booking page). Adds a "Book a call" button to the chat, and the AI shares it when visitors want to talk |
+| `CREDIT_URL` | Optional link for the "Developed by Layth Gharbia" credit at the bottom of the chat (e.g. a LinkedIn profile). `CREDIT_NAME` changes the name, or `off` hides the credit |
 | `WIDGET_THEME` | Optional widget theme: `light`, `dark`, `navy`, `auto` |
 | `ABACUS_API_KEY` | Abacus.AI RouteLLM key. If set, Abacus writes the answers |
 | `ABACUS_MODEL` | Model on Abacus (default `route-llm`, which picks a model per question) |

@@ -32,6 +32,9 @@ services:
         value: "#1d6fd8"
       - key: BOOKING_URL
         value: https://calendar.app.google/rHowoyL9ZZkULtu38
+      # Link for the "Developed by Layth Gharbia" credit (set to the LinkedIn profile URL).
+      - key: CREDIT_URL
+        sync: false
       - key: WIDGET_SUGGESTIONS
         value: "What has Nezar delivered as a CIO/CTO?|How does Nezar approach AI and cloud modernization?|What kind of roles is Nezar open to?|How can I book a call with Nezar?"
       # Optional overrides (add them later under Environment if needed):

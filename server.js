@@ -295,6 +295,8 @@ app.get("/api/config", (req, res) => {
     avatar: process.env.WIDGET_AVATAR || "",
     theme: process.env.WIDGET_THEME || "",
     bookingUrl: BOOKING_URL,
+    creditName: process.env.CREDIT_NAME || "",
+    creditUrl: process.env.CREDIT_URL || "",
   });
 });
 app.get("/health", (req, res) => res.json({ ok: true, indexBuiltAt: index.builtAt }));
