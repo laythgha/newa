@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Jane Doe Portfolio</title>
-<meta name="description" content="Sample resume website used to demo the AI chat assistant.">
+<title>Layth Gharbia</title>
+<meta name="description" content="Layth Gharbia: IT systems administration and full-stack web development. Ask my AI assistant about my experience.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -100,6 +100,28 @@
   .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 30px; }
   .tags span { font-size: 13px; padding: 6px 12px; border-radius: 8px; background: #fff; border: 1px solid var(--border); }
   @media (max-width: 720px) { .skills { grid-template-columns: 1fr; } }
+  .groups { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .group { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 20px; transition: transform .2s, box-shadow .2s; }
+  .group:hover { transform: translateY(-3px); box-shadow: 0 16px 34px -18px rgba(79,70,229,.45); }
+  .group .ic { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-size: 18px; background: var(--tint); margin-bottom: 12px; }
+  .group h3 { font-size: 15.5px; font-weight: 700; margin-bottom: 10px; }
+  .group .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .group .chips span { font-size: 12.5px; padding: 4px 10px; border-radius: 7px; background: var(--soft); border: 1px solid var(--border); }
+  @media (max-width: 860px) { .groups { grid-template-columns: 1fr; } }
+  .feature { display: grid; grid-template-columns: 300px 1fr; background: #fff; border: 1px solid var(--border); border-radius: 20px; overflow: hidden; }
+  .feature .cover { min-height: 220px; display: grid; place-items: center; font-size: 56px; position: relative; background: linear-gradient(135deg, #0ea5e9, #6366f1); }
+  .feature .cover::after { content: ""; position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,.25) 1px, transparent 1px); background-size: 14px 14px; }
+  .feature .body { padding: 24px 26px; }
+  .feature h3 { font-size: 18px; font-weight: 700; }
+  .feature p { color: var(--muted); font-size: 15px; margin-top: 6px; }
+  .feature ul { margin-top: 12px; padding-left: 18px; color: var(--muted); font-size: 14.5px; }
+  .feature li + li { margin-top: 4px; }
+  .feature .stack { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .feature .stack span { font-size: 12px; padding: 3px 9px; border-radius: 6px; background: var(--tint); color: var(--a1); }
+  @media (max-width: 760px) { .feature { grid-template-columns: 1fr; } .feature .cover { min-height: 140px; } }
+  .edu { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 20px 22px; }
+  .edu h3 { font-size: 16.5px; font-weight: 700; }
+  .edu p { color: var(--muted); font-size: 14.5px; margin-top: 2px; }
 
   /* timeline */
   .timeline { position: relative; padding-left: 28px; }
@@ -151,7 +173,7 @@
 <body>
 <nav>
   <div class="wrap">
-    <a class="logo" href="#"><i>JD</i>Jane Doe</a>
+    <a class="logo" href="#"><i>LG</i>Layth Gharbia</a>
     <div class="links"><a href="#skills">Skills</a><a href="#experience">Experience</a><a href="#projects">Projects</a><a href="#contact">Contact</a></div>
     <button class="btn ghost" style="height:38px;padding:0 14px;font-size:13.5px" onclick="ResumeChatbot.open()">Ask my AI ✨</button>
   </div>
@@ -160,37 +182,36 @@
 <header class="hero">
   <div class="wrap">
     <div>
-      <span class="badge"><b></b>Open to senior &amp; staff roles</span>
-      <h1>Hi, I'm Jane <span aria-hidden="true">👋</span><br><span class="hl">Senior Software Engineer</span><br>building <span class="typed" id="typed">web platforms</span></h1>
-      <p class="lead">Nine years shipping TypeScript and Python products on AWS. I lead small teams, care about fast pages and clean data, and love mentoring.</p>
+      <span class="badge"><b></b>Open to IT &amp; web development roles</span>
+      <h1>Hi, I'm Layth <span aria-hidden="true">👋</span><br><span class="hl">IT Systems Administration</span><br>keeping <span class="typed" id="typed">systems running</span></h1>
+      <p class="lead">IT support and systems administration with a full-stack web development background. I troubleshoot Windows and macOS, manage Active Directory and Office 365 accounts, and build React and Firebase apps.</p>
       <div class="cta">
         <button class="btn primary" onclick="ResumeChatbot.open()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l.9-5.4A8 8 0 1 1 21 12z"/></svg>
           Chat with my AI assistant
         </button>
-        <a class="btn ghost" href="#experience">
+        <a class="btn ghost" href="/layth-gharbia-resume.pdf" download>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/></svg>
-          Download CV
+          Download resume
         </a>
       </div>
       <div class="socials">
-        <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.1c.5-1 1.8-2 3.8-2 4 0 4.8 2.6 4.8 6V21h-4v-5.5c0-1.3 0-3-1.9-3s-2.1 1.4-2.1 2.9V21H9z"/></svg></a>
-        <a href="#" aria-label="GitHub"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.4-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 2.9.8.1-.7.4-1.1.6-1.3-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.8 1a9.6 9.6 0 0 1 5 0c1.9-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9V21c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg></a>
-        <a href="#contact" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a>
+        <a href="#" aria-label="LinkedIn" id="linkedin"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.1c.5-1 1.8-2 3.8-2 4 0 4.8 2.6 4.8 6V21h-4v-5.5c0-1.3 0-3-1.9-3s-2.1 1.4-2.1 2.9V21H9z"/></svg></a>
+        <a href="mailto:Laythgha17@gmail.com" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg></a>
       </div>
     </div>
     <div class="profile">
-      <div class="photo"><span>JD</span></div>
-      <div class="float f1"><span class="ic">🏆</span><div>AWS Certified<small>Solutions Architect</small></div></div>
-      <div class="float f2"><span class="ic">⚡</span><div>60% faster<small>dashboard load time</small></div></div>
+      <div class="photo"><span>LG</span></div>
+      <div class="float f1"><span class="ic">🎓</span><div>B.S. Computer Science<small>University of North Texas · 2026</small></div></div>
+      <div class="float f2"><span class="ic">🤖</span><div>UAT lead<small>AI vehicle pricing system</small></div></div>
     </div>
   </div>
   <div class="wrap stats-wrap">
     <div class="stats" style="margin-top:56px">
-      <div class="stat reveal"><b>9+</b><span>Years experience</span></div>
-      <div class="stat reveal"><b>2B</b><span>Events processed daily</span></div>
-      <div class="stat reveal"><b>12</b><span>Teams using my APIs</span></div>
-      <div class="stat reveal"><b>5</b><span>Engineers led</span></div>
+      <div class="stat reveal"><b>1+ yr</b><span>Hands-on IT support</span></div>
+      <div class="stat reveal"><b>4+ yrs</b><span>Leading teams</span></div>
+      <div class="stat reveal"><b>5</b><span>Programming languages</span></div>
+      <div class="stat reveal"><b>2026</b><span>B.S. Computer Science</span></div>
     </div>
   </div>
 </header>
@@ -199,15 +220,11 @@
   <div class="wrap">
     <p class="kicker mono">// skills</p>
     <h2>What I work with</h2>
-    <div class="skills reveal">
-      <div class="skill"><div class="top">TypeScript &amp; React<span>Expert</span></div><div class="bar"><i data-w="95"></i></div></div>
-      <div class="skill"><div class="top">Python &amp; Django<span>Expert</span></div><div class="bar"><i data-w="90"></i></div></div>
-      <div class="skill"><div class="top">Node.js &amp; REST APIs<span>Advanced</span></div><div class="bar"><i data-w="88"></i></div></div>
-      <div class="skill"><div class="top">AWS &amp; Terraform<span>Advanced</span></div><div class="bar"><i data-w="85"></i></div></div>
-      <div class="skill"><div class="top">PostgreSQL &amp; data modeling<span>Advanced</span></div><div class="bar"><i data-w="82"></i></div></div>
-      <div class="skill"><div class="top">Team leadership<span>Advanced</span></div><div class="bar"><i data-w="80"></i></div></div>
+    <div class="groups">
+      <div class="group reveal"><div class="ic">🖥️</div><h3>IT &amp; Systems</h3><div class="chips"><span>Windows</span><span>macOS</span><span>Active Directory</span><span>Office 365</span><span>Networking &amp; Wi-Fi</span><span>Workstation setup</span><span>User access</span></div></div>
+      <div class="group reveal"><div class="ic">⚛️</div><h3>Web Development</h3><div class="chips"><span>TypeScript</span><span>JavaScript</span><span>React.js</span><span>Next.js</span><span>HTML</span><span>REST APIs</span><span>Responsive UI</span></div></div>
+      <div class="group reveal"><div class="ic">🔥</div><h3>Backend, Data &amp; Process</h3><div class="chips"><span>Firebase</span><span>Firestore</span><span>MySQL</span><span>Python</span><span>C++</span><span>Git</span><span>Vercel</span><span>Agile/Scrum</span></div></div>
     </div>
-    <div class="tags reveal"><span>Docker</span><span>GitHub Actions</span><span>Lambda</span><span>ECS</span><span>S3</span><span>CI/CD</span><span>Data pipelines</span><span>Mentoring</span></div>
   </div>
 </section>
 
@@ -216,12 +233,12 @@
     <p class="kicker mono">// experience</p>
     <h2>Where I've worked</h2>
     <div class="timeline">
-      <div class="job reveal"><div class="head"><h3>Senior Software Engineer · <em>Acme Corp</em></h3><span class="when mono">2021 – present</span></div>
-        <ul><li>Led a team of 5 building the customer analytics dashboard.</li><li>Cut page load time by 60% with a precomputed reporting warehouse.</li><li>Introduced CI/CD with GitHub Actions and Terraform.</li></ul></div>
-      <div class="job reveal"><div class="head"><h3>Software Engineer · <em>Globex</em></h3><span class="when mono">2017 – 2021</span></div>
-        <ul><li>Built Python ingestion pipelines processing 2 billion events per day.</li><li>Designed internal REST APIs used by 12 product teams.</li></ul></div>
-      <div class="job reveal"><div class="head"><h3>Junior Developer · <em>Initech</em></h3><span class="when mono">2015 – 2017</span></div>
-        <ul><li>Migrated a PHP and jQuery e-commerce site to Django.</li></ul></div>
+      <div class="job reveal"><div class="head"><h3>IT / Systems Administration Intern · <em>Texas Auto Buy</em></h3><span class="when mono">Nov 2024 – Jan 2026</span></div>
+        <ul><li>Day-to-day IT support: diagnosed and resolved workstation, software, network, Wi-Fi and printer issues, escalating to vendors and ISPs.</li><li>Set up employee workstations and managed user accounts, permissions and password resets.</li><li>Subject matter expert and business analyst for an AI-driven vehicle pricing system; led user acceptance testing before release.</li><li>Documented common fixes and repeatable setup steps for new devices and users.</li></ul></div>
+      <div class="job reveal"><div class="head"><h3>Manager · <em>Paciugo</em></h3><span class="when mono">Jul 2020 – Jan 2023</span></div>
+        <ul><li>Helped open a new store location, setting up its operations and staffing.</li><li>Led high-volume, customer-facing daily operations; trained and coached the team.</li></ul></div>
+      <div class="job reveal"><div class="head"><h3>Manager · <em>Which Wich</em></h3><span class="when mono">Sep 2018 – Jan 2023</span></div>
+        <ul><li>Supervised daily operations and team performance while keeping service and safety standards.</li></ul></div>
     </div>
   </div>
 </section>
@@ -230,10 +247,18 @@
   <div class="wrap">
     <p class="kicker mono">// projects</p>
     <h2>Selected work</h2>
-    <div class="projects">
-      <div class="proj reveal"><div class="cover c1">📊</div><div class="body"><h3>Customer Analytics Dashboard</h3><p>Real-time reporting for 4,000 business customers.</p><div class="stack"><span>React</span><span>Node.js</span><span>PostgreSQL</span></div></div></div>
-      <div class="proj reveal"><div class="cover c2">🚀</div><div class="body"><h3>Event Ingestion Platform</h3><p>Streaming pipeline handling 2B events a day.</p><div class="stack"><span>Python</span><span>AWS</span><span>Kafka</span></div></div></div>
-      <div class="proj reveal"><div class="cover c3">🛠️</div><div class="body"><h3>Infrastructure as Code</h3><p>Terraform modules that took releases from days to hours.</p><div class="stack"><span>Terraform</span><span>GitHub Actions</span></div></div></div>
+    <div class="feature reveal">
+      <div class="cover">🩺</div>
+      <div class="body">
+        <h3>Doctor Finder</h3>
+        <p>A web app to search and compare doctors by specialty, location and insurance, with ratings, reviews and profiles.</p>
+        <ul><li>Built by a team in Agile/Scrum sprints, with a shared backlog, code reviews and pull requests.</li><li>Responsive React front end; Firebase back end with real-time Firestore updates.</li><li>Deployed with CI/CD on Vercel.</li></ul>
+        <div class="stack"><span>React</span><span>Firebase</span><span>Firestore</span><span>Cloud Functions</span><span>Vercel</span><span>Agile/Scrum</span></div>
+      </div>
+    </div>
+    <div class="edu reveal" style="margin-top:18px">
+      <div><h3>🎓 University of North Texas</h3><p>B.S. Computer Science · Data Structures &amp; Algorithms, Databases &amp; SQL, Operating Systems, Computer Networks, Web Development</p></div>
+      <span class="when mono">2026</span>
     </div>
   </div>
 </section>
@@ -243,20 +268,20 @@
     <div class="box reveal">
       <p class="kicker mono" style="color:#a5b4fc">// let's talk</p>
       <h2>Have a role in mind?</h2>
-      <p>Ask my AI assistant about my experience, availability, or work authorization, or email me directly.</p>
+      <p>Ask my AI assistant about my experience, skills, or availability, or email me directly.</p>
       <div class="cta">
-        <button class="btn primary" onclick="ResumeChatbot.ask('Is Jane open to new roles?')">Ask the assistant</button>
-        <a class="btn ghost" href="mailto:jane@example.com">jane@example.com</a>
+        <button class="btn primary" onclick="ResumeChatbot.ask('What kind of roles is Layth looking for?')">Ask the assistant</button>
+        <a class="btn ghost" href="mailto:Laythgha17@gmail.com">Laythgha17@gmail.com</a>
       </div>
     </div>
   </div>
 </section>
-<footer>Sample resume page for demoing the AI chat widget.</footer>
+<footer>© Layth Gharbia</footer>
 
 <script>
   // Typing effect in the hero
   (function () {
-    var words = ["web platforms", "data pipelines", "cloud infrastructure", "great teams"];
+    var words = ["systems running", "users productive", "web apps shipping", "teams supported"];
     var el = document.getElementById("typed"), w = 0, i = words[0].length, del = true;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     setTimeout(function tick() {

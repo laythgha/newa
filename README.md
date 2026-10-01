@@ -148,6 +148,16 @@ later does not overwrite them; use the admin page instead.)
 
 A persistent disk needs a paid Render instance (the `starter` plan in `render.yaml`).
 
+### Two services from one repo
+
+`render.yaml` defines two services:
+
+- **resume-chatbot**: a client's bot (Nezar). Its documents live on its persistent disk and are
+  edited at `/admin`; `docs/` in the repo only seeded the disk on first start, so changing `docs/`
+  never affects it. `/demo` there is a blank test page.
+- **layth-portfolio**: Layth's own site (`PORTFOLIO=true`). The home page is the portfolio, the bot
+  answers from `docs/` in the repo, and there's no disk: edit `docs/` and push to update it.
+
 ### Other hosts
 
 Any Node host works (Railway, Fly.io, a VPS). Build command `npm install`, start command
@@ -182,7 +192,8 @@ lib/indexer.js       Splits documents into sections, builds and searches the ind
 lib/reindex.js       `npm run reindex`
 public/widget.js     The embeddable chat bubble
 public/admin.html    Page for editing the documents
-public/demo.html     Sample page for testing
-docs/                resume.md and qa.txt (sample content: replace with yours)
+public/portfolio.html Layth's portfolio site (served at / and /demo when PORTFOLIO=true)
+public/test.html     Blank test page with the widget (/demo otherwise)
+docs/                resume.md and qa.txt: Layth's documents (also the first-start seed for a disk)
 test/                Unit tests: `npm test`
 ```

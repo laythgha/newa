@@ -35,3 +35,25 @@ services:
       name: chatbot-data
       mountPath: /var/data
       sizeGB: 1
+
+  # Layth's own portfolio site with the chat widget (answers about Layth).
+  # The resume and Q&A come from docs/ in the repo, so there's no disk: edit docs/
+  # and push to update it. Free plan: it sleeps when idle and takes ~1 minute to wake.
+  - type: web
+    name: layth-portfolio
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: PORTFOLIO
+        value: "true"
+      - key: ABACUS_API_KEY
+        sync: false
+      - key: ABACUS_MODEL
+        value: route-llm
+      - key: ADMIN_TOKEN
+        generateValue: true

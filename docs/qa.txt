@@ -1,21 +1,35 @@
-# Questions and answers for the website chatbot.
-# Write each question on a "Q:" line and its answer on an "A:" line.
-# Answers can continue onto the next lines. Lines starting with # are ignored.
+# Questions and answers for Layth's website chatbot.
+# Each question on a "Q:" line and its answer on an "A:" line. Lines starting with # are ignored.
+# The answers below come straight from the resume. Fill in the commented-out ones at the bottom
+# (remove the # in front) so the bot can answer them too.
 
-Q: Are you open to new opportunities?
-A: Yes. Jane is open to senior or staff engineering roles, full-time or contract.
+Q: What kind of roles is Layth looking for?
+A: Layth is looking for IT and systems administration roles, such as IT support, help desk, or junior systems administrator positions, and is also a strong fit for full-stack or front-end web development roles thanks to hands-on React, Next.js, and Firebase experience.
 
-Q: Are you willing to relocate?
-A: Jane prefers remote work but would consider relocating for the right role in Austin, Denver, or Seattle.
+Q: How can I contact Layth?
+A: Email Layth at Laythgha17@gmail.com or connect on LinkedIn.
 
-Q: What are your salary expectations?
-A: Jane prefers to discuss compensation directly. Please reach out at jane@example.com.
+Q: When does Layth graduate?
+A: Layth is completing a B.S. in Computer Science at the University of North Texas, graduating in 2026.
 
-Q: How can I contact you?
-A: Email jane@example.com or connect on LinkedIn at linkedin.com/in/janedoe.
+Q: What IT experience does Layth have?
+A: At Texas Auto Buy (Nov 2024 to Jan 2026) Layth provided day-to-day IT support: resolving workstation and software issues, setting up employee workstations, managing user accounts, permissions and password resets, and troubleshooting network, Wi-Fi and printer problems, including escalations with vendors and ISPs.
 
-Q: What is your work authorization status?
-A: Jane is a U.S. citizen and does not need sponsorship.
+Q: Does Layth have leadership experience?
+A: Yes. Layth managed restaurant and store teams for over four years at Paciugo and Which Wich, including helping open a new store location, running high-volume daily operations, and training and coaching staff.
 
-Q: What kind of team do you like working in?
-A: Small, product-focused teams that ship often and value code review and mentoring.
+Q: What is the Doctor Finder project?
+A: Doctor Finder is a web app Layth built with a team in Agile/Scrum sprints. It lets users search and compare doctors by specialty, location and insurance, with a React front end and a Firebase back end (Firestore, Auth, Cloud Functions), real-time updates, and CI/CD on Vercel.
+
+Q: Has Layth worked with AI systems?
+A: Yes. At Texas Auto Buy, Layth was the subject matter expert and business analyst for an AI-driven vehicle pricing system, led user acceptance testing of its AI-generated pricing features, and supported staff using an AI-based vehicle acquisition tool.
+
+# --- Fill these in (remove the # at the start of both lines) ---
+# Q: Is Layth open to relocating?
+# A:
+# Q: Does Layth need visa sponsorship?
+# A:
+# Q: When can Layth start?
+# A:
+# Q: Is Layth open to remote, hybrid, or on-site work?
+# A:

@@ -25,6 +25,9 @@ const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5-5";
 let detectedName = "";
 const ownerName = () => process.env.OWNER_NAME || detectedName || "the site owner";
 const ADMIN_TOKEN = (process.env.ADMIN_TOKEN || "").trim();
+// PORTFOLIO=true turns this server into Layth's portfolio site: the home page and
+// /demo show the portfolio. Otherwise /demo is a blank test page with the widget.
+const PORTFOLIO = process.env.PORTFOLIO === "true";
 // Address of the page for editing the resume and Q&A.
 const DOCS_PAGE = "/" + (process.env.DOCS_PAGE_PATH || "admin").replace(/^\/+|\/+$/g, "");
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
@@ -233,6 +236,7 @@ app.get("/robot.png", (req, res) => {
   res.sendFile(path.join(here, "public", "robot.png"));
 });
 app.get("/", (req, res) => {
+  if (PORTFOLIO) return res.sendFile(path.join(here, "public", "portfolio.html"));
   res.type("html").send(`<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><title>Chatbot Server</title>
 <style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#f6f7fb;color:#0f172a;
@@ -248,7 +252,10 @@ app.get(DOCS_PAGE, (req, res) => res.sendFile(path.join(here, "public", "admin.h
 for (const old of ["/admin", "/chatbot-docs"]) {
   if (old !== DOCS_PAGE) app.get(old, (req, res) => res.redirect(301, DOCS_PAGE));
 }
-app.get("/demo", (req, res) => res.sendFile(path.join(here, "public", "demo.html")));
+app.get("/demo", (req, res) => res.sendFile(path.join(here, "public", PORTFOLIO ? "portfolio.html" : "test.html")));
+if (PORTFOLIO) {
+  app.get("/layth-gharbia-resume.pdf", (req, res) => res.sendFile(path.join(here, "public", "layth-gharbia-resume.pdf")));
+}
 // Widget settings, so the site only needs the bare <script> tag.
 app.get("/api/config", (req, res) => {
   res.set("Access-Control-Allow-Origin", "*");
