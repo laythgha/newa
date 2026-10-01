@@ -125,9 +125,12 @@ setInterval(() => {
   }
 }, RATE_LIMIT.windowMs).unref();
 
-function originAllowed(origin) {
+function originAllowed(origin, req) {
   if (!ALLOWED_ORIGINS.length) return true; // not configured: allow all (local testing)
-  return !!origin && ALLOWED_ORIGINS.includes(origin);
+  if (!origin) return false;
+  // The bot's own pages (/demo, /admin) are always allowed.
+  if (origin === `${req.protocol}://${req.get("host")}`) return true;
+  return ALLOWED_ORIGINS.includes(origin);
 }
 
 function adminAuthorized(req) {
@@ -154,7 +157,7 @@ app.get("/health", (req, res) => res.json({ ok: true, indexBuiltAt: index.builtA
 
 app.use("/api/chat", (req, res, next) => {
   const origin = req.get("origin");
-  if (origin && originAllowed(origin)) {
+  if (origin && originAllowed(origin, req)) {
     res.set("Access-Control-Allow-Origin", origin);
     res.set("Vary", "Origin");
     res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -166,7 +169,7 @@ app.use("/api/chat", (req, res, next) => {
 
 app.post("/api/chat", express.json({ limit: "64kb" }), async (req, res) => {
   const origin = req.get("origin");
-  if (origin && !originAllowed(origin)) return res.status(403).json({ error: "Origin not allowed" });
+  if (origin && !originAllowed(origin, req)) return res.status(403).json({ error: "Origin not allowed" });
   if (rateLimited(req.ip)) {
     return res.status(429).json({ error: "Too many messages. Please try again in a few minutes." });
   }
