@@ -28,6 +28,8 @@ const ADMIN_TOKEN = (process.env.ADMIN_TOKEN || "").trim();
 // PORTFOLIO=true turns this server into Layth's portfolio site: the home page and
 // /demo show the portfolio. Otherwise /demo is a blank test page with the widget.
 const PORTFOLIO = process.env.PORTFOLIO === "true";
+// Optional scheduling link (e.g. Google Calendar booking page) the bot offers visitors.
+const BOOKING_URL = /^https:\/\/\S+$/.test(process.env.BOOKING_URL || "") ? process.env.BOOKING_URL : "";
 // Address of the page for editing the resume and Q&A.
 const DOCS_PAGE = "/" + (process.env.DOCS_PAGE_PATH || "admin").replace(/^\/+|\/+$/g, "");
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
@@ -104,7 +106,11 @@ How to answer:
 - Never invent verifiable facts: no made-up salary figures, dates, employers, job titles, degrees, certifications, skills or tools that aren't listed, or contact details. Inference is for preferences, fit and potential, not for facts.
 - Connect answers to what helps the visitor: relevant experience, results, and why ${OWNER_NAME} would be a strong fit.
 
-Refer to ${OWNER_NAME} in the third person. Keep answers short and friendly: two to five sentences, or a brief list when listing several items. Write plain text; you may use **bold** and "- " bullet lines, but no headings or tables. If a visitor asks about something unrelated to ${OWNER_NAME}, politely steer back to what you can help with.`;
+Refer to ${OWNER_NAME} in the third person. Keep answers short and friendly: two to five sentences, or a brief list when listing several items. Write plain text; you may use **bold** and "- " bullet lines, but no headings or tables. If a visitor asks about something unrelated to ${OWNER_NAME}, politely steer back to what you can help with.${
+  BOOKING_URL
+    ? `\n\nVisitors can book a call with ${OWNER_NAME} here: ${BOOKING_URL}\nWhen a visitor wants to talk, meet, schedule an interview, or asks how to get in touch, include this link (written out in full), and suggest it when they seem interested in ${OWNER_NAME} as a candidate.`
+    : ""
+}`;
 
 function formatContext(chunks) {
   if (!chunks.length) return "<context>\n(no matching excerpts)\n</context>";
@@ -287,6 +293,8 @@ app.get("/api/config", (req, res) => {
     color: process.env.WIDGET_COLOR || "",
     color2: process.env.WIDGET_COLOR2 || "",
     avatar: process.env.WIDGET_AVATAR || "",
+    theme: process.env.WIDGET_THEME || "",
+    bookingUrl: BOOKING_URL,
   });
 });
 app.get("/health", (req, res) => res.json({ ok: true, indexBuiltAt: index.builtAt }));

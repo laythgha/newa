@@ -37,7 +37,7 @@ attributes on the tag:
 | `data-teaser` | Second line of the speech bubble that pops up after a few seconds (once per visit), or `off` | a short "Hiring? Ask me..." line |
 | `data-color` | Main accent color (header, button, visitor messages) | `#4f46e5` (indigo) |
 | `data-color2` | Second color of the gradient; set it equal to `data-color` for a flat color | `#7c3aed` (violet) |
-| `data-theme` | `light`, `dark`, or `auto` (follows the visitor's system setting) | `light` |
+| `data-theme` | `light`, `dark`, `navy` (deep navy with blue accents), or `auto` (follows the visitor's system setting) | `light` |
 | `data-position` | `right` or `left` corner | `right` |
 
 Your own buttons can open the chat too: `onclick="ResumeChatbot.open()"`, or
@@ -124,6 +124,8 @@ and restart to switch to real answers.
 
 | Variable | Purpose |
 |---|---|
+| `BOOKING_URL` | Optional scheduling link (e.g. Google Calendar booking page). Adds a "Book a call" button to the chat, and the AI shares it when visitors want to talk |
+| `WIDGET_THEME` | Optional widget theme: `light`, `dark`, `navy`, `auto` |
 | `ABACUS_API_KEY` | Abacus.AI RouteLLM key. If set, Abacus writes the answers |
 | `ABACUS_MODEL` | Model on Abacus (default `route-llm`, which picks a model per question) |
 | `ANTHROPIC_API_KEY` | Claude API key, used when no Abacus key is set. With neither key the bot runs in demo mode |

@@ -23,6 +23,17 @@ services:
       # Password for the /admin page.
       - key: ADMIN_TOKEN
         generateValue: true
+      # Nezar's look (navy + sky blue, to match his site) and his booking link.
+      - key: WIDGET_THEME
+        value: navy
+      - key: WIDGET_COLOR
+        value: "#0f98dc"
+      - key: WIDGET_COLOR2
+        value: "#1d6fd8"
+      - key: BOOKING_URL
+        value: https://calendar.app.google/rHowoyL9ZZkULtu38
+      - key: WIDGET_SUGGESTIONS
+        value: "What has Nezar delivered as a CIO/CTO?|How does Nezar approach AI and cloud modernization?|What kind of roles is Nezar open to?|How can I book a call with Nezar?"
       # Optional overrides (add them later under Environment if needed):
       #   OWNER_NAME       - otherwise read from the top of the resume
       #   ALLOWED_ORIGINS  - otherwise the bot locks to the first website that uses it

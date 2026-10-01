@@ -76,7 +76,8 @@
       : cfg.teaser || (FIRST ? "Hiring? Ask me anything about " + FIRST + "'s experience." : "Have a question? Ask me anything.");
   var ACCENT = cfg.color || "#4f46e5";
   var ACCENT2 = cfg.color2 || (cfg.color ? cfg.color : "#7c3aed");
-  var THEME = cfg.theme === "dark" || cfg.theme === "auto" ? cfg.theme : "light";
+  var THEME = ["dark", "auto", "navy"].indexOf(cfg.theme) >= 0 ? cfg.theme : "light";
+  var BOOKING_URL = /^https:\/\//.test(cfg.bookingUrl || "") ? cfg.bookingUrl : "";
   var SIDE = cfg.position === "left" ? "left" : "right";
   var INITIALS = NAME
     ? NAME.split(/\s+/).map(function (w) { return w[0]; }).slice(0, 2).join("").toUpperCase()
@@ -123,6 +124,7 @@
     rocket: svg('<path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2.1-.1-2.9a2.2 2.2 0 0 0-2.9-.1z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.9A12.9 12.9 0 0 1 22 2c0 2.7-.8 7.5-6 11a22.4 22.4 0 0 1-4 2z"/><path d="M9 12H4s.6-3 2-4c1.6-1.1 5 0 5 0M12 15v5s3-.6 4-2c1.1-1.6 0-5 0-5"/>'),
     mail: svg('<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/>'),
     sparkle: svg('<path d="M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.4z"/>'),
+    calendar: svg('<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/>'),
   };
   var SUGGESTION_ICONS = ["code", "briefcase", "rocket", "mail"];
 
@@ -132,6 +134,11 @@
     "--bg:#ffffff;--canvas:#f6f7fb;--surface:#eef0f6;--border:#e3e6ef;--text:#0f172a;--muted:#64748b;" +
     "--bot-bg:#ffffff;--bot-text:#0f172a;--code-bg:#eef0f6;--dots:rgba(15,23,42,.06);" +
     "--shadow:0 2px 6px rgba(15,23,42,.06),0 24px 64px -12px rgba(15,23,42,.28);";
+  // Deep navy with electric-blue accents, for sites with that look.
+  var NAVY =
+    "--bg:#041737;--canvas:#00102b;--surface:#0a2550;--border:#123a6b;--text:#e8f1fb;--muted:#8fb0d1;" +
+    "--bot-bg:#062048;--bot-text:#e8f1fb;--code-bg:#0e2f5e;--dots:rgba(64,152,216,.12);" +
+    "--shadow:0 2px 6px rgba(0,0,0,.4),0 24px 64px -12px rgba(0,8,30,.8),0 0 0 1px rgba(15,152,220,.25);";
   var DARK =
     "--bg:#111320;--canvas:#0b0d17;--surface:#1c1f30;--border:#262a3d;--text:#e8eaf3;--muted:#9097b0;" +
     "--bot-bg:#171a2a;--bot-text:#e8eaf3;--code-bg:#262a3d;--dots:rgba(255,255,255,.05);" +
@@ -140,7 +147,7 @@
   var css =
     ":host{all:initial}" +
     ".root{--a1:" + ACCENT + ";--a2:" + ACCENT2 + ";--grad:linear-gradient(135deg,var(--a1),var(--a2));" +
-    (THEME === "dark" ? DARK : LIGHT) + "}" +
+    (THEME === "dark" ? DARK : THEME === "navy" ? NAVY : LIGHT) + "}" +
     (THEME === "auto" ? "@media (prefers-color-scheme:dark){.root{" + DARK + "}}" : "") +
     "*{box-sizing:border-box;margin:0;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased}" +
     "button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}" +
@@ -220,6 +227,15 @@
 
     // header
     ".header{position:relative;display:flex;align-items:center;gap:14px;padding:20px 14px 20px 20px;color:#fff;background:var(--grad);overflow:hidden}" +
+    (THEME === "navy"
+      ? ".header{background:radial-gradient(120% 140% at 100% 0%,rgba(15,152,220,.35),transparent 60%),linear-gradient(135deg,#06244f,#001231);border-bottom:1px solid #0e5d89}" +
+        ".header::before{background-image:radial-gradient(rgba(64,152,216,.35) 1px,transparent 1px)}" +
+        ".avatar{background:var(--grad)}"
+      : "") +
+    ".book{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 8px;padding:9px 12px;border-radius:12px;border:1px solid color-mix(in srgb,var(--a1) 55%,var(--border));" +
+    "background:color-mix(in srgb,var(--a1) 12%,transparent);color:var(--text);font-size:13.5px;font-weight:600;text-decoration:none;transition:background .15s}" +
+    ".book:hover{background:color-mix(in srgb,var(--a1) 22%,transparent)}" +
+    ".book svg{width:16px;height:16px;color:var(--a1)}" +
     ".header::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.18) 1px,transparent 1px);background-size:14px 14px;" +
     "-webkit-mask-image:linear-gradient(110deg,transparent 30%,#000 100%);mask-image:linear-gradient(110deg,transparent 30%,#000 100%)}" +
     ".header::after{content:'';position:absolute;width:220px;height:220px;right:-70px;top:-120px;border-radius:50%;background:radial-gradient(rgba(255,255,255,.28),transparent 70%)}" +
@@ -347,6 +363,7 @@
     "</header>" +
     '<div class="messages" aria-live="polite"></div>' +
     '<form class="composer">' +
+    (BOOKING_URL ? '<a class="book" target="_blank" rel="noopener" href="' + esc(BOOKING_URL) + '">' + ICONS.calendar + "Book a call" + (FIRST ? " with " + esc(FIRST) : "") + "</a>" : "") +
     '<div class="box"><textarea rows="1" placeholder="Ask about skills, projects, availability..." aria-label="Your question"></textarea>' +
     '<button class="send" type="submit" aria-label="Send" disabled>' + ICONS.send + "</button></div>" +
     '<p class="note">' + ICONS.sparkle + "AI answers based on " + (FIRST ? esc(FIRST) + "'s" : "the") + " resume · verify important details</p>" +
