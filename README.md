@@ -115,11 +115,37 @@ and restart to switch to real answers.
 | `CLAUDE_MODEL` | Model to use (default `claude-sonnet-5-5`) |
 | `DOCS_DIR`, `INDEX_FILE` | Where the documents and the saved index live (default `docs/`, `data/index.json`) |
 
-### Hosting
+### Hosting on Render (recommended)
 
-Any Node host works (Render, Railway, Fly.io, a VPS). Build command `npm install`, start
-command `npm start`, and set the variables above in the host's dashboard. Then use the
-host's URL in the `<script>` tag.
+The repo includes `render.yaml`, so Render sets most things up for you:
+
+1. Put the client's real resume and Q&A in `docs/`, commit and push.
+2. In the [Render dashboard](https://dashboard.render.com), choose **New > Blueprint** and connect
+   this GitHub repo (and branch).
+3. Render asks for the values left blank in `render.yaml`:
+   - `ABACUS_API_KEY` (or `ANTHROPIC_API_KEY`)
+   - `OWNER_NAME`, e.g. `Alex Smith`
+   - `ALLOWED_ORIGINS`, e.g. `https://alexsmith.com,https://www.alexsmith.com`
+4. Click **Apply**. Render builds the service, attaches a 1 GB persistent disk, and generates
+   `ADMIN_TOKEN` (the `/admin` password). Find it under the service's **Environment** tab.
+5. Render gives the service an address like `https://resume-chatbot.onrender.com`. The line for
+   the client's site is then:
+   ```html
+   <script src="https://resume-chatbot.onrender.com/widget.js" defer></script>
+   ```
+
+The documents live on the persistent disk (`/var/data/docs`). On the very first start the server
+copies them there from `docs/` in the repo; after that, the copies on the disk are what the bot
+and the admin page use, so admin-page edits survive redeploys. (Changing `docs/` in the repo
+later does not overwrite them; use the admin page instead.)
+
+A persistent disk needs a paid Render instance (the `starter` plan in `render.yaml`).
+
+### Other hosts
+
+Any Node host works (Railway, Fly.io, a VPS). Build command `npm install`, start command
+`npm start`, and set the variables above in the host's dashboard. Point `DOCS_DIR` and
+`INDEX_FILE` at a persistent volume so admin-page edits are kept.
 
 ## How it answers
 

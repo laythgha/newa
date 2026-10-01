@@ -52,9 +52,24 @@ function refreshIndex(reason) {
       `${n("resume")} resume sections, ${n("qa")} Q&A pairs`,
   );
 }
+// When DOCS_DIR points somewhere else (e.g. a persistent disk on the host), seed it
+// once with the documents from the repo. After that the copies there, which the
+// admin page edits, are kept and never overwritten.
+const BUNDLED_DOCS = path.join(here, "docs");
+fs.mkdirSync(DOCS_DIR, { recursive: true });
+if (path.resolve(DOCS_DIR) !== path.resolve(BUNDLED_DOCS)) {
+  for (const names of [RESUME_FILES, QA_FILES]) {
+    if (names.some((n) => fs.existsSync(path.join(DOCS_DIR, n)))) continue;
+    const source = names.find((n) => fs.existsSync(path.join(BUNDLED_DOCS, n)));
+    if (source) {
+      fs.copyFileSync(path.join(BUNDLED_DOCS, source), path.join(DOCS_DIR, source));
+      console.log(`[docs] copied ${source} to ${DOCS_DIR}`);
+    }
+  }
+}
+
 refreshIndex("startup");
 
-fs.mkdirSync(DOCS_DIR, { recursive: true });
 let watchTimer;
 fs.watch(DOCS_DIR, () => {
   clearTimeout(watchTimer);
