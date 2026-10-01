@@ -28,7 +28,11 @@ const MAX_HISTORY = 12; // messages kept from the conversation
 const MAX_MESSAGE_CHARS = 2000;
 const RATE_LIMIT = { windowMs: 10 * 60 * 1000, max: 30 }; // per visitor IP
 
-const client = new Anthropic();
+// Without an API key the server runs in demo mode: the widget, admin page and
+// document search all work, and the bot replies with the best-matching excerpt
+// instead of a Claude-written answer.
+const DEMO_MODE = !process.env.ANTHROPIC_API_KEY;
+const client = DEMO_MODE ? null : new Anthropic();
 
 // ---------- index (built once, rebuilt only when the documents change) ----------
 
@@ -106,18 +110,18 @@ function cleanMessages(body) {
   return merged;
 }
 
-const hits = new Map();
+const requestLog = new Map();
 function rateLimited(ip) {
   const now = Date.now();
-  const recent = (hits.get(ip) || []).filter((t) => now - t < RATE_LIMIT.windowMs);
+  const recent = (requestLog.get(ip) || []).filter((t) => now - t < RATE_LIMIT.windowMs);
   recent.push(now);
-  hits.set(ip, recent);
+  requestLog.set(ip, recent);
   return recent.length > RATE_LIMIT.max;
 }
 setInterval(() => {
   const now = Date.now();
-  for (const [ip, times] of hits) {
-    if (times.every((t) => now - t >= RATE_LIMIT.windowMs)) hits.delete(ip);
+  for (const [ip, times] of requestLog) {
+    if (times.every((t) => now - t >= RATE_LIMIT.windowMs)) requestLog.delete(ip);
   }
 }, RATE_LIMIT.windowMs).unref();
 
@@ -169,7 +173,10 @@ app.post("/api/chat", express.json({ limit: "64kb" }), async (req, res) => {
   const messages = cleanMessages(req.body);
   if (!messages) return res.status(400).json({ error: "Invalid messages" });
 
-  const context = formatContext(retrieve(messages));
+  const hits = retrieve(messages);
+  if (DEMO_MODE) return sendDemoAnswer(res, hits);
+
+  const context = formatContext(hits);
   const last = messages.at(-1);
   const apiMessages = [
     ...messages.slice(0, -1),
@@ -227,6 +234,18 @@ app.post("/api/chat", express.json({ limit: "64kb" }), async (req, res) => {
   res.end();
 });
 
+function sendDemoAnswer(res, hits) {
+  const top = hits[0];
+  let text = "[Demo mode: no API key set] ";
+  if (!top) text += "I couldn't find anything about that in the documents.";
+  else if (top.source === "qa") text += top.text.replace(/^Q:.*\nA:\s*/, "");
+  else text += `From the resume (${top.title}):\n${top.text}`;
+  res.set({ "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-cache" });
+  res.write(`data: ${JSON.stringify({ type: "text", text })}\n\n`);
+  res.write(`data: ${JSON.stringify({ type: "done" })}\n\n`);
+  res.end();
+}
+
 // ----- admin: view and replace the two documents -----
 
 app.get("/api/admin/docs", (req, res) => {
@@ -255,6 +274,7 @@ app.put("/api/admin/docs", express.json({ limit: "2mb" }), (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Chatbot server on http://localhost:${PORT}  (demo page: /demo, admin: /admin)`);
+  if (DEMO_MODE) console.warn("ANTHROPIC_API_KEY is not set: running in DEMO MODE (no Claude answers).");
   if (!ADMIN_TOKEN) console.warn("ADMIN_TOKEN is not set: the /admin page is disabled.");
   if (!ALLOWED_ORIGINS.length) console.warn("ALLOWED_ORIGINS is not set: any website can use this bot.");
 });

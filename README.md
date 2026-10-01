@@ -83,11 +83,16 @@ npm start
 Open http://localhost:3000/demo to try the bubble on a sample page, and
 http://localhost:3000/admin to edit the documents.
 
+**No API key yet?** Leave `ANTHROPIC_API_KEY` empty and the server starts in demo mode:
+the widget, admin page and document search all work, and the bot replies with the
+best-matching Q&A answer or resume section instead of a Claude-written answer. Add the key
+and restart to switch to real answers.
+
 ### Settings (`.env`)
 
 | Variable | Purpose |
 |---|---|
-| `ANTHROPIC_API_KEY` | Your Claude API key (required) |
+| `ANTHROPIC_API_KEY` | Your Claude API key. Without it the bot runs in demo mode |
 | `ADMIN_TOKEN` | Password for `/admin`. If empty, the admin page is disabled |
 | `ALLOWED_ORIGINS` | Comma-separated site addresses allowed to use the bot, e.g. `https://janedoe.com,https://www.janedoe.com`. Set this in production so other sites can't use your API key |
 | `OWNER_NAME` | Your name, so the bot refers to you correctly |
