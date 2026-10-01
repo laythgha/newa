@@ -10,8 +10,8 @@ IT Systems Administration professional with 1 year of hands-on support experienc
 - Concepts: REST APIs, real-time data, responsive UI, accessibility basics, Agile/Scrum
 - Databases: MySQL, Firebase Firestore
 - IT administration: Windows and macOS troubleshooting, Active Directory, Office 365 account management, network monitoring, workstation setup
-- AI engineering: LLM APIs (Abacus.AI RouteLLM, Claude API), retrieval-augmented generation (RAG), BM25 search, prompt engineering, streaming responses
-- Backend and deployment: Node.js, Express, Render
+- AI engineering: LLM APIs (Abacus.AI RouteLLM, Anthropic Claude), retrieval-augmented generation (RAG), BM25 search, prompt engineering, streaming responses (SSE)
+- Backend, testing and deployment: Node.js, Express, Playwright, Render (infrastructure-as-code Blueprints), Python and Pillow for image processing
 
 # Education
 University of North Texas, B.S. Computer Science, graduating 2026.
@@ -19,12 +19,13 @@ Coursework: Data Structures & Algorithms, Databases & SQL, Operating Systems, Co
 
 # Experience
 ## Freelance AI / Web Developer, Self-employed (Oct 2026 - present)
-- Built and deployed an AI resume chatbot for a client: a retrieval-augmented (RAG) assistant that answers recruiters' questions from the client's resume and Q&A documents.
-- Designed the retrieval layer: documents are chunked and indexed once with BM25 search, cached, and re-indexed only when they change, instead of being re-read for every question.
-- Integrated an LLM (Abacus.AI RouteLLM, with Claude API support) with streamed, word-by-word answers and a prompt that keeps answers grounded in the documents.
-- Shipped an embeddable one-line JavaScript chat widget (Shadow DOM, animated robot mascot) that works on any website.
-- Built an admin panel with Word (.docx) upload so the client updates the bot's content without code, including editing straight from their own site.
-- Deployed on Render with persistent storage, per-website access locking, and rate limiting to control API costs.
+AI Resume Assistant for an executive client (a CIO/CTO).
+- Designed, built and deployed a retrieval-augmented (RAG) chatbot that answers recruiters' questions from the client's resume and Q&A documents. It installs on any website, including WordPress, with a single script tag.
+- Built the retrieval pipeline in Node.js and Express: documents are chunked by section and Q&A pair into a BM25 index that is cached to disk and rebuilt only when content changes, and the most relevant passages ground every answer.
+- Integrated large language models behind a provider-agnostic layer (Abacus.AI RouteLLM and Anthropic Claude) with streamed, word-by-word answers. Engineered the system prompt to stay factual, make reasonable inferences in the client's favor, and share the client's booking link.
+- Developed an embeddable Shadow DOM chat widget with an animated robot mascot (waving, blinking, eyes that follow the cursor) and themes matched to the client's brand; prepared the artwork with Python and Pillow (background removal, layer separation).
+- Built owner tools inside the chat: the client types /admin, logs in, and uploads Word (.docx) files; the bot detects the client's name automatically, and the edit button is visible only on the client's own devices.
+- Hardened it for production: the bot locks itself to the client's website, per-visitor and daily request caps bound API costs, and authentication is timing-safe. Deployed two services on Render with an infrastructure-as-code Blueprint and persistent storage, and verified it with Playwright browser tests and unit tests.
 
 ## Texas Auto Buy, IT / Systems Administration Intern (Nov 2024 - Jan 2026)
 - Served as subject matter expert and business analyst for an AI-driven vehicle pricing system, translating complex automotive purchasing logic into functional technical requirements.

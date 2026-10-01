@@ -25,7 +25,10 @@ Q: Has Layth worked with AI systems?
 A: Yes. Layth built and deployed a RAG-based AI chatbot for a freelance client (this assistant is built the same way), is currently training as an AI engineer, and at Texas Auto Buy was the subject matter expert and business analyst for an AI-driven vehicle pricing system, leading user acceptance testing of its AI-generated pricing features.
 
 Q: Tell me about the AI chatbot project.
-A: Layth built an AI resume chatbot for a client as a freelance project. It's a retrieval-augmented (RAG) assistant: the client's resume and Q&A are indexed once with BM25 search, the most relevant parts are retrieved for each question, and an LLM (via Abacus.AI RouteLLM) writes a streamed answer. It installs on any website with one line of JavaScript, has an animated robot mascot, and includes an admin panel where the client uploads Word files to update it. It's deployed on Render with access locking and rate limiting.
+A: Layth designed, built and deployed an AI resume assistant for an executive client (a CIO/CTO). It's a retrieval-augmented (RAG) chatbot: the client's resume and Q&A are indexed with BM25 search, the most relevant passages are retrieved for each question, and an LLM (Abacus.AI RouteLLM, with Anthropic Claude support) streams a grounded answer. It installs on any website, including the client's WordPress site, with one line of JavaScript, has an animated waving robot mascot and brand-matched colors, offers the client's booking link, and lets the client log in from inside the chat to upload Word files. It's deployed on Render with access locking and daily usage caps to control costs. The assistant on Layth's own site is built the same way.
+
+Q: What technologies did Layth use for the AI chatbot?
+A: Node.js and Express for the server, BM25 retrieval for RAG, Abacus.AI RouteLLM and the Anthropic Claude API for the language model, a Shadow DOM JavaScript widget, mammoth for reading Word files, Python and Pillow for the mascot artwork, Playwright and node:test for testing, and Render with an infrastructure-as-code Blueprint for deployment.
 
 Q: Is Layth training in AI?
 A: Yes, Layth is currently training to become an AI engineer, alongside a B.S. in Computer Science at the University of North Texas.

@@ -328,7 +328,14 @@ app.use("/api/chat", (req, res, next) => {
 });
 
 app.post("/api/chat", express.json({ limit: "64kb" }), async (req, res) => {
-  const origin = req.get("origin");
+  // Browsers send Origin with these requests; fall back to the Referer's origin for
+  // any that leave it out on same-site requests.
+  let origin = req.get("origin");
+  if (!origin) {
+    try {
+      origin = new URL(req.get("referer") || "").origin;
+    } catch {}
+  }
   if (origin && !originAllowed(origin, req, { lock: true })) {
     return res.status(403).json({ error: "This chat isn't enabled for this website." });
   }
