@@ -27,6 +27,15 @@
   button:disabled { opacity: .5; cursor: default; }
   #status { font-size: 14px; color: var(--muted); }
   #editor[hidden] { display: none; }
+  .remember { display: flex; align-items: center; gap: 8px; font-weight: 400; font-size: 14px; color: var(--muted); margin: 10px 0 0; cursor: pointer; }
+  .remember input { width: auto; margin: 0; }
+  .note { margin: 10px 0 0; font-size: 14px; color: #15803d; }
+  .loggedin #login .row, .loggedin #login .remember, .loggedin #login > label[for="token"] { display: none; }
+  #login .who-row { display: none; align-items: center; justify-content: space-between; gap: 8px; font-size: 14px; color: var(--muted); }
+  .loggedin #login .who-row { display: flex; }
+  button.small { background: none; color: var(--accent); border: 1px solid var(--border); padding: 6px 12px; font-size: 13px; }
+  body.embed main { padding-top: 16px; }
+  body.embed h1 { font-size: 19px; }
   .error { color: #dc2626; font-size: 14px; margin: 10px 0 0; min-height: 0; }
   .error:empty { display: none; }
   .head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
@@ -55,7 +64,10 @@
       <input id="token" type="password" autocomplete="current-password">
       <button id="load" type="submit">Open documents</button>
     </div>
+    <div class="who-row"><span>Logged in.</span><button type="button" class="small" id="logout">Log out on this device</button></div>
+    <label class="remember"><input type="checkbox" id="remember" checked> Keep me logged in on this device</label>
     <p id="msg" class="error" role="alert"></p>
+    <p id="ownerNote" class="note" hidden></p>
   </form>
 
   <div id="editor" hidden>
@@ -85,11 +97,29 @@
 </main>
 <script>
   const $ = (id) => document.getElementById(id);
-  try { $("token").value = sessionStorage.getItem("adminToken") || ""; } catch {}
+  const KEY = "adminToken";
+  const embed = new URLSearchParams(location.search).has("embed");
+  // The website this page was opened from, when it's shown inside the chat on the owner's site.
+  const parentOrigin = !embed ? "" :
+    (location.ancestorOrigins && location.ancestorOrigins[0]) ||
+    (document.referrer ? new URL(document.referrer).origin : "");
+  if (embed) document.body.classList.add("embed");
+
+  function storedToken() {
+    try { return localStorage.getItem(KEY) || sessionStorage.getItem(KEY) || ""; } catch { return ""; }
+  }
+  function storeToken(token) {
+    try {
+      localStorage.removeItem(KEY); sessionStorage.removeItem(KEY);
+      if (token) ($("remember").checked ? localStorage : sessionStorage).setItem(KEY, token);
+    } catch {}
+  }
+  function tellParent(msg) {
+    if (embed && parentOrigin && window.parent !== window) window.parent.postMessage(msg, parentOrigin);
+  }
 
   async function call(method, body, url) {
     const token = $("token").value.trim();
-    try { sessionStorage.setItem("adminToken", token); } catch {}
     const res = await fetch(url || "/api/admin/docs", {
       method,
       headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
@@ -124,6 +154,33 @@
     } catch (e) { $("msg").textContent = e.message; }
   };
 
+  async function afterLogin() {
+    const token = $("token").value.trim();
+    storeToken(token);
+    document.body.classList.add("loggedin");
+    if (!embed || !parentOrigin) return;
+    try {
+      const r = await call("POST", { origin: parentOrigin }, "/api/admin/claim-site");
+      if (r.allowed) {
+        tellParent({ type: "rc-admin-login", token: $("remember").checked ? token : "" });
+        if ($("remember").checked) {
+          $("ownerNote").hidden = false;
+          $("ownerNote").textContent = "From now on, the chat on your website shows an edit button (pencil) for you on this device, so you can come back here anytime.";
+        }
+      } else {
+        $("ownerNote").hidden = false;
+        $("ownerNote").style.color = "#b45309";
+        $("ownerNote").textContent = "This bot is set up for " + (r.site || "another website") + ", so the edit button won't be added to this site.";
+      }
+    } catch (e) { /* editing still works here */ }
+  }
+
+  $("logout").onclick = () => {
+    storeToken("");
+    tellParent({ type: "rc-admin-logout" });
+    location.reload();
+  };
+
   $("login").onsubmit = async (e) => {
     e.preventDefault();
     $("msg").textContent = "";
@@ -134,8 +191,12 @@
       $("editor").hidden = false;
       showFacts(data);
       $("token").value = $("token").value.trim();
+      await afterLogin();
       $("status").textContent = "Index last built " + new Date(data.indexBuiltAt).toLocaleString();
-    } catch (e) { $("msg").textContent = e.message; }
+    } catch (e) {
+      $("msg").textContent = e.message;
+      if (/password/i.test(e.message)) { storeToken(""); tellParent({ type: "rc-admin-logout" }); }
+    }
   };
 
   document.querySelectorAll(".upload input").forEach((input) => {
@@ -169,9 +230,24 @@
       const r = await call("PUT", { resume: $("resume").value, qa: $("qa").value });
       $("status").textContent = `Saved. The bot now knows ${r.resumeSections} resume sections and ${r.qaPairs} Q&A pairs.`;
       showFacts(await call("GET"));
+      tellParent({ type: "rc-admin-saved" });
     } catch (e) { $("status").textContent = e.message; }
     $("save").disabled = false;
   };
+
+  // Log straight in when this device remembers the password, or when the chat on the
+  // owner's site hands it over.
+  function autoLogin(token) {
+    if (!token) return;
+    $("token").value = token;
+    $("login").requestSubmit();
+  }
+  if (embed) {
+    window.addEventListener("message", (e) => {
+      if (e.source === window.parent && e.data && e.data.type === "rc-admin-token") autoLogin(String(e.data.token || ""));
+    });
+  }
+  autoLogin(storedToken());
 </script>
 </body>
 </html>

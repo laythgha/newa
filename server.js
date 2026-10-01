@@ -437,6 +437,17 @@ app.post("/api/admin/convert", express.raw({ type: "*/*", limit: "15mb" }), asyn
   }
 });
 
+// The editor opened from the owner's own site (the chat's Edit button / ?admin) asks
+// whether that site may keep the owner logged in. Logging in there also locks the bot
+// to that site if it isn't locked yet: the owner has just proved it's theirs.
+app.post("/api/admin/claim-site", express.json(), (req, res) => {
+  if (!adminAuthorized(req)) return denyAdmin(res);
+  const origin = String(req.body?.origin || "");
+  if (!/^https?:\/\/[^/\s]+$/.test(origin)) return res.status(400).json({ error: "Unknown website" });
+  const allowed = originAllowed(origin, req, { lock: true });
+  res.json({ allowed, site: ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS.join(", ") : lockedSite });
+});
+
 app.delete("/api/admin/site", (req, res) => {
   if (!adminAuthorized(req)) return denyAdmin(res);
   saveLockedSite(null);

@@ -65,6 +65,19 @@ Q: How can I contact you?
 A: Email jane@example.com.
 ```
 
+## Updating the documents from your own website
+
+The owner can edit everything without leaving their site:
+
+1. Once, open your own site with `?admin` on the end (e.g. `https://yoursite.com/?admin`) and
+   enter the password. Keep "Keep me logged in on this device" ticked.
+2. From then on, on that device, the chat window on your site has a pencil button in its header.
+   Click it to open the editor (already logged in), upload Word files, and save.
+
+Visitors never see the pencil: it only appears in a browser that has logged in. Logging in this
+way also locks the bot to that website if it wasn't locked yet. Use "Log out on this device" in the
+editor to remove the button.
+
 ## Updating the documents
 
 On the documents page (`/admin`), click **Upload Word file** above either box to load a

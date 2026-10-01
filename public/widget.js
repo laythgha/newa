@@ -112,6 +112,7 @@
     chat: svg('<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l.9-5.4A8 8 0 1 1 21 12z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01" stroke-width="2.6"/>'),
     close: svg('<path d="M18 6 6 18M6 6l12 12"/>'),
     reset: svg('<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/>'),
+    edit: svg('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'),
     send: svg('<path d="M12 19V5M5 12l7-7 7 7"/>', 2.4),
     chevron: svg('<path d="m6 9 6 6 6-6"/>'),
     arrow: svg('<path d="M5 12h14M13 6l6 6-6 6"/>'),
@@ -231,6 +232,15 @@
     ".hbtn:hover{background:rgba(255,255,255,.16);color:#fff}" +
     ".hbtn svg{width:18px;height:18px}" +
     ".hbtn.close{display:none}" +
+    ".hbtn.edit{display:none}.root.owner .hbtn.edit{display:flex}" +
+    // owner's document editor, shown over the page
+    ".editor{position:fixed;inset:0;z-index:5;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(15,23,42,.55);backdrop-filter:blur(3px)}" +
+    ".editor.show{display:flex}" +
+    ".editor .frame{position:relative;width:min(1120px,100%);height:min(860px,100%);border-radius:16px;overflow:hidden;background:#f3f4f6;box-shadow:0 30px 80px rgba(0,0,0,.4)}" +
+    ".editor iframe{width:100%;height:100%;border:0;display:block}" +
+    ".editor .x{position:absolute;top:10px;right:10px;width:36px;height:36px;border-radius:10px;background:rgba(15,23,42,.75);color:#fff;display:flex;align-items:center;justify-content:center}" +
+    ".editor .x svg{width:18px;height:18px}" +
+    "@media (max-width:520px){.editor{padding:0}.editor .frame{border-radius:0}}" +
 
     // messages
     ".messages{flex:1;overflow-y:auto;padding:20px 16px 8px;display:flex;flex-direction:column;gap:14px;" +
@@ -309,6 +319,7 @@
     '<header class="header">' +
     '<div class="avatar">' + avatarHTML + "</div>" +
     '<div class="who"><h2></h2><p></p><div class="status"><i></i>Online · replies instantly</div></div>' +
+    '<button class="hbtn edit" title="Edit your resume and Q&amp;A (only you see this)" aria-label="Edit documents">' + ICONS.edit + "</button>" +
     '<button class="hbtn reset" title="New conversation" aria-label="New conversation">' + ICONS.reset + "</button>" +
     '<button class="hbtn close" aria-label="Close chat">' + ICONS.chevron + "</button>" +
     "</header>" +
@@ -672,8 +683,63 @@
   };
   early.forEach(function (call) { window.ResumeChatbot[call[0]](call[1]); });
 
+  // ---------- owner editing: documents can be edited from the owner's own site ----------
+  // Visiting the site with ?admin (or #admin) opens the editor. After logging in there,
+  // this browser remembers it, and the chat header shows an Edit button, for the owner only.
+
+  var OWNER_KEY = STORAGE_KEY + ":owner";
+  function ownerToken() {
+    try { return localStorage.getItem(OWNER_KEY) || ""; } catch (e) { return ""; }
+  }
+  function setOwnerToken(token) {
+    try {
+      if (token) localStorage.setItem(OWNER_KEY, token);
+      else localStorage.removeItem(OWNER_KEY);
+    } catch (e) {}
+    rootEl.classList.toggle("owner", !!token);
+  }
+  rootEl.classList.toggle("owner", !!ownerToken());
+
+  var editor = null;
+  function openEditor() {
+    if (!editor) {
+      editor = document.createElement("div");
+      editor.className = "editor";
+      editor.innerHTML = '<div class="frame" role="dialog" aria-label="Edit chatbot documents">' +
+        '<iframe title="Edit chatbot documents"></iframe><button class="x" aria-label="Close editor">' + ICONS.close + "</button></div>";
+      editor.querySelector(".x").addEventListener("click", closeEditor);
+      editor.addEventListener("click", function (e) { if (e.target === editor) closeEditor(); });
+      var frame = editor.querySelector("iframe");
+      frame.addEventListener("load", function () {
+        var token = ownerToken();
+        if (token) frame.contentWindow.postMessage({ type: "rc-admin-token", token: token }, SERVER);
+      });
+      rootEl.appendChild(editor);
+    }
+    editor.querySelector("iframe").src = SERVER + "/admin?embed=1";
+    editor.classList.add("show");
+  }
+  function closeEditor() {
+    if (editor) editor.classList.remove("show");
+  }
+  shadow.querySelector(".hbtn.edit").addEventListener("click", openEditor);
+  window.addEventListener("message", function (e) {
+    if (e.origin !== SERVER || !e.data || typeof e.data.type !== "string") return;
+    if (e.data.type === "rc-admin-login" && typeof e.data.token === "string") setOwnerToken(e.data.token);
+    else if (e.data.type === "rc-admin-logout") setOwnerToken("");
+    else if (e.data.type === "rc-admin-close") closeEditor();
+    else if (e.data.type === "rc-admin-saved") {
+      // Start a fresh conversation so the owner can try the new documents straight away.
+      history = [];
+      saveHistory();
+      if (list.childElementCount) render();
+    }
+  });
+  window.ResumeChatbot.edit = openEditor;
+
   function mount() {
     document.body.appendChild(host);
+    if (/(^|[?&#])admin(=|&|$)/.test(location.search.slice(1) + "&" + location.hash.slice(1))) openEditor();
   }
   if (document.body) mount();
   else document.addEventListener("DOMContentLoaded", mount);
