@@ -12,6 +12,8 @@
  *   data-greeting     First message
  *   data-suggestions  Starter questions separated by "|"
  *   data-label        Text on the launcher button
+ *   data-launcher     "robot" (default: animated robot mascot) or "pill" (gradient button)
+ *   data-robot        URL of a custom mascot image (default: robot.png on the bot server)
  *   data-teaser       Text of the small pop-up next to the button, or "off"
  *   data-color        Accent color (default: indigo #4f46e5)
  *   data-color2       Second gradient color (default: violet #7c3aed)
@@ -58,6 +60,10 @@
     : "AI";
   var STORAGE_KEY = "resume-chatbot:" + SERVER;
   var TEASER_KEY = STORAGE_KEY + ":teaser";
+  var ROBOT = cfg.launcher !== "pill";
+  var ROBOT_SRC = cfg.robot || SERVER + "/robot.png";
+  var BUBBLE_SUB = cfg.teaser && cfg.teaser !== "off" ? cfg.teaser : FIRST ? "about " + FIRST + "'s experience & skills" : "";
+  var REDUCED_MOTION = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   var history = [];
   try {
@@ -143,6 +149,38 @@
     ".teaser .x:hover{background:var(--surface);color:var(--text)}" +
     ".teaser .x svg{width:14px;height:14px}" +
 
+    // robot mascot launcher
+    ".bot{position:fixed;bottom:10px;" + SIDE + ":14px;width:104px;aspect-ratio:245/300;cursor:pointer;border:none;background:none;padding:0;" +
+    "-webkit-tap-highlight-color:transparent;transition:opacity .25s,transform .25s}" +
+    ".bot:focus-visible{outline:2px solid var(--a1);outline-offset:4px;border-radius:16px}" +
+    ".bot .body{position:absolute;inset:0;animation:float 3.6s ease-in-out infinite;transform-origin:50% 60%}" +
+    ".bot .fig{position:absolute;inset:0;transition:transform .35s cubic-bezier(.3,1.6,.5,1);filter:drop-shadow(0 0 10px rgba(56,189,248,.45)) drop-shadow(0 10px 14px rgba(15,23,42,.25));animation:glow 3.6s ease-in-out infinite}" +
+    ".bot img{width:100%;height:100%;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}" +
+    ".bot:hover .fig{transform:scale(1.08) rotate(-6deg)}" +
+    ".bot.hop .fig{animation:hop .6s cubic-bezier(.3,1.5,.5,1)}" +
+    ".eye{position:absolute;top:26.5%;width:8%;aspect-ratio:1;border-radius:50%;margin:-4% 0 0 -4%;" +
+    "background:radial-gradient(circle at 40% 38%,#ffffff 0 18%,#a5f3fc 30%,#38bdf8 58%,#0284c7 100%);" +
+    "box-shadow:0 0 6px 2px rgba(56,189,248,.9),0 0 14px 4px rgba(56,189,248,.45);" +
+    "transform:translate(var(--ex,0),var(--ey,0));transition:transform .12s ease-out}" +
+    ".eye.l{left:43.85%}.eye.r{left:63.85%}" +
+    ".eye i{position:absolute;inset:0;border-radius:50%;background:inherit;transition:transform .09s}" +
+    ".bot.blink .eye{transform:translate(var(--ex,0),var(--ey,0)) scaleY(.12)}" +
+    ".bot:hover .eye{background:radial-gradient(circle at 40% 38%,#ffffff 0 22%,#cffafe 34%,#67e8f9 60%,#0891b2 100%)}" +
+    "@keyframes float{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-9px) rotate(2deg)}}" +
+    "@keyframes glow{0%,100%{filter:drop-shadow(0 0 8px rgba(56,189,248,.35)) drop-shadow(0 10px 14px rgba(15,23,42,.25))}50%{filter:drop-shadow(0 0 16px rgba(56,189,248,.7)) drop-shadow(0 14px 16px rgba(15,23,42,.2))}}" +
+    "@keyframes hop{0%{transform:scale(1)}30%{transform:translateY(-16px) scale(1.12) rotate(8deg)}60%{transform:translateY(0) scale(.95) rotate(-4deg)}100%{transform:scale(1)}}" +
+    ".bubble{position:fixed;bottom:84px;" + SIDE + ":118px;max-width:220px;padding:10px 14px;border-radius:14px;" +
+    "background:#0b1530;color:#fff;border:1.5px solid rgba(56,189,248,.7);box-shadow:0 0 18px rgba(56,189,248,.35),0 10px 24px -8px rgba(15,23,42,.45);" +
+    "font-size:13px;line-height:1.4;cursor:pointer;opacity:0;visibility:hidden;transform:translateX(" + (SIDE === "right" ? "8px" : "-8px") + ") scale(.92);" +
+    "transform-origin:" + (SIDE === "right" ? "right" : "left") + " bottom;transition:opacity .25s,transform .3s cubic-bezier(.3,1.5,.5,1),visibility 0s linear .3s}" +
+    ".bubble b{display:block;font-size:14.5px;font-weight:700;letter-spacing:-.01em}" +
+    ".bubble span{display:block;color:#bae6fd;margin-top:1px}" +
+    ".bubble::after{content:'';position:absolute;bottom:14px;" + SIDE + ":-7px;width:12px;height:12px;background:#0b1530;" +
+    "border-" + (SIDE === "right" ? "right" : "left") + ":1.5px solid rgba(56,189,248,.7);border-bottom:1.5px solid rgba(56,189,248,.7);transform:rotate(" + (SIDE === "right" ? "-45deg" : "45deg") + ")}" +
+    ".bubble.show,.root.robot .bot:hover~.bubble{opacity:1;visibility:visible;transform:none;transition:opacity .25s,transform .3s cubic-bezier(.3,1.5,.5,1)}" +
+    ".root.robot:not(.open) .launcher{display:none}" +
+    ".root.robot.open .bot,.root.robot.open .bubble{opacity:0;visibility:hidden;pointer-events:none}" +
+
     // panel
     ".panel{position:fixed;bottom:96px;" + SIDE + ":24px;width:400px;height:min(660px,calc(100vh - 124px));" +
     "background:var(--canvas);color:var(--text);border-radius:20px;box-shadow:var(--shadow);outline:1px solid var(--border);" +
@@ -227,6 +265,8 @@
     ".hbtn.close{display:flex}" +
     ".root.open .launcher{display:none}" +
     ".launcher{bottom:16px;" + SIDE + ":16px}" +
+    ".bot{width:84px;bottom:8px;" + SIDE + ":8px}" +
+    ".bubble{bottom:70px;" + SIDE + ":94px}" +
     ".teaser{bottom:84px;" + SIDE + ":16px}}" +
     "@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}";
 
@@ -241,7 +281,7 @@
 
   shadow.innerHTML =
     "<style>" + css + "</style>" +
-    '<div class="root">' +
+    '<div class="root' + (ROBOT ? " robot" : "") + '">' +
     '<section class="panel" role="dialog" aria-label="' + esc(TITLE) + ' chat" aria-hidden="true">' +
     '<header class="header">' +
     '<div class="avatar">' + avatarHTML + "</div>" +
@@ -256,7 +296,12 @@
     '<p class="note">' + ICONS.sparkle + "AI answers based on " + (FIRST ? esc(FIRST) + "'s" : "the") + " resume · verify important details</p>" +
     "</form>" +
     "</section>" +
-    (TEASER
+    (ROBOT
+      ? '<button class="bot" type="button" aria-label="' + esc(LABEL) + '"><div class="body"><div class="fig">' +
+        '<img alt="" src="' + esc(ROBOT_SRC) + '"><span class="eye l"></span><span class="eye r"></span></div></div></button>' +
+        '<div class="bubble" aria-hidden="true"><b>Ask me anything!</b>' + (BUBBLE_SUB ? "<span>" + esc(BUBBLE_SUB) + "</span>" : "") + "</div>"
+      : "") +
+    (TEASER && !ROBOT
       ? '<div class="teaser" role="button" tabindex="0" aria-label="Open chat"><div class="mini">' + avatarHTML + "</div>" +
         "<div><b>" + esc(FIRST ? FIRST + "'s assistant" : TITLE) + "</b><span>" + esc(TEASER) + "</span></div>" +
         '<button class="x" aria-label="Dismiss">' + ICONS.close + "</button></div>"
@@ -270,6 +315,8 @@
   var panel = shadow.querySelector(".panel");
   var launcher = shadow.querySelector(".launcher");
   var teaser = shadow.querySelector(".teaser");
+  var bot = shadow.querySelector(".bot");
+  var bubble = shadow.querySelector(".bubble");
   var list = shadow.querySelector(".messages");
   var form = shadow.querySelector("form");
   var input = shadow.querySelector("textarea");
@@ -360,8 +407,9 @@
   }
 
   function hideTeaser(remember) {
-    if (!teaser) return;
-    teaser.classList.remove("show");
+    if (bubble) bubble.classList.remove("show");
+    if (!teaser && !bubble) return;
+    if (teaser) teaser.classList.remove("show");
     if (remember) {
       try { sessionStorage.setItem(TEASER_KEY, "1"); } catch (e) {}
     }
@@ -408,6 +456,79 @@
       setTimeout(function () {
         if (!rootEl.classList.contains("open")) teaser.classList.add("show");
       }, 3500);
+    }
+  }
+
+  // ---------- robot mascot: eyes follow the cursor, blinks, hops when clicked ----------
+
+  if (bot) {
+    bot.addEventListener("click", function () {
+      if (REDUCED_MOTION) return setOpen(true);
+      bot.classList.remove("hop");
+      void bot.offsetWidth; // restart the animation
+      bot.classList.add("hop");
+      setTimeout(function () { setOpen(true); }, 380);
+    });
+    bot.addEventListener("animationend", function (e) {
+      if (e.animationName === "hop") bot.classList.remove("hop");
+    });
+    bubble.addEventListener("click", function () { setOpen(true); });
+
+    var eyesEl = bot.querySelector(".fig");
+    var pending = null;
+    function lookAt(x, y) {
+      var r = bot.getBoundingClientRect();
+      var cx = r.left + r.width * 0.54;
+      var cy = r.top + r.height * 0.265;
+      var dx = x - cx;
+      var dy = y - cy;
+      var dist = Math.hypot(dx, dy) || 1;
+      var reach = Math.min(1, dist / 160); // look further the further away the cursor is
+      var maxX = r.width * 0.045;
+      var maxY = r.width * 0.03;
+      eyesEl.style.setProperty("--ex", ((dx / dist) * maxX * reach).toFixed(2) + "px");
+      eyesEl.style.setProperty("--ey", ((dy / dist) * maxY * reach).toFixed(2) + "px");
+    }
+    if (!REDUCED_MOTION) {
+      document.addEventListener("mousemove", function (e) {
+        if (pending) return;
+        pending = requestAnimationFrame(function () {
+          pending = null;
+          if (!rootEl.classList.contains("open")) lookAt(e.clientX, e.clientY);
+        });
+      }, { passive: true });
+      document.addEventListener("mouseleave", function () {
+        eyesEl.style.setProperty("--ex", "0px");
+        eyesEl.style.setProperty("--ey", "0px");
+      });
+      (function blinkLoop() {
+        setTimeout(function () {
+          bot.classList.add("blink");
+          setTimeout(function () {
+            bot.classList.remove("blink");
+            // sometimes blink twice
+            if (Math.random() < 0.25) {
+              setTimeout(function () {
+                bot.classList.add("blink");
+                setTimeout(function () { bot.classList.remove("blink"); }, 120);
+              }, 180);
+            }
+            blinkLoop();
+          }, 130);
+        }, 2500 + Math.random() * 3500);
+      })();
+    }
+
+    // Say "Ask me anything!" a few seconds after the page loads (once per visit).
+    var said = false;
+    try { said = !!sessionStorage.getItem(TEASER_KEY); } catch (e) {}
+    if (!said && !history.length && cfg.teaser !== "off") {
+      setTimeout(function () {
+        if (rootEl.classList.contains("open")) return;
+        bubble.classList.add("show");
+        try { sessionStorage.setItem(TEASER_KEY, "1"); } catch (e) {}
+        setTimeout(function () { bubble.classList.remove("show"); }, 7000);
+      }, 2500);
     }
   }
 

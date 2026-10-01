@@ -157,6 +157,10 @@ app.get("/widget.js", (req, res) => {
   res.set("Cache-Control", "public, max-age=300");
   res.sendFile(path.join(here, "public", "widget.js"));
 });
+app.get("/robot.png", (req, res) => {
+  res.set("Cache-Control", "public, max-age=86400");
+  res.sendFile(path.join(here, "public", "robot.png"));
+});
 app.get("/admin", (req, res) => res.sendFile(path.join(here, "public", "admin.html")));
 app.get("/demo", (req, res) => res.sendFile(path.join(here, "public", "demo.html")));
 app.get("/health", (req, res) => res.json({ ok: true, indexBuiltAt: index.builtAt }));
