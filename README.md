@@ -73,7 +73,7 @@ reused until the documents change.
 
 To update, use either way:
 
-1. **Admin page** (easiest): open `https://YOUR-BOT-SERVER/admin`, enter the admin password
+1. **Documents page** (easiest): open `https://YOUR-BOT-SERVER/chatbot-docs`, enter the admin password
    (`ADMIN_TOKEN`), edit, and click **Save**. The bot uses the new text right away.
 2. **Edit the files** in `docs/` on the server. The server notices the change and re-indexes
    automatically. (Or run `npm run reindex`.)
@@ -94,7 +94,8 @@ npm start
 ```
 
 Open http://localhost:3000/demo to try the bubble on a sample page, and
-http://localhost:3000/admin to edit the documents.
+http://localhost:3000/chatbot-docs to edit the documents. (`/admin` still works and forwards there; set
+`DOCS_PAGE_PATH` to use a different address.)
 
 **No API key yet?** Leave `ABACUS_API_KEY` and `ANTHROPIC_API_KEY` empty and the server starts in demo mode:
 the widget, admin page and document search all work, and the bot replies with the
@@ -108,7 +109,7 @@ and restart to switch to real answers.
 | `ABACUS_API_KEY` | Abacus.AI RouteLLM key. If set, Abacus writes the answers |
 | `ABACUS_MODEL` | Model on Abacus (default `route-llm`, which picks a model per question) |
 | `ANTHROPIC_API_KEY` | Claude API key, used when no Abacus key is set. With neither key the bot runs in demo mode |
-| `ADMIN_TOKEN` | Password for `/admin`. If empty, the admin page is disabled |
+| `ADMIN_TOKEN` | Password for the documents page (`/chatbot-docs`). If empty, the admin page is disabled |
 | `ALLOWED_ORIGINS` | Optional. Comma-separated sites allowed to use the bot. If empty, the bot locks itself to the first website that uses the chat (shown on the admin page, with an Unlock button). Your own computer (`localhost`) always works for testing |
 | `OWNER_NAME` | Optional. The person's name. If empty, it's read from the first line of the resume |
 | `PORT` | Port to listen on (default 3000) |
@@ -128,7 +129,7 @@ The repo includes `render.yaml`, so Render sets most things up for you:
    The name and website don't need setting: the name is read from the top of the resume, and
    the bot locks itself to the first website that uses it.
 4. Click **Apply**. Render builds the service, attaches a 1 GB persistent disk, and generates
-   `ADMIN_TOKEN` (the `/admin` password). Find it under the service's **Environment** tab.
+   `ADMIN_TOKEN` (the `/chatbot-docs` password). Find it under the service's **Environment** tab.
 5. Render gives the service an address like `https://resume-chatbot.onrender.com`. The line for
    the client's site is then:
    ```html

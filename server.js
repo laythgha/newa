@@ -24,6 +24,8 @@ const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5-5";
 let detectedName = "";
 const ownerName = () => process.env.OWNER_NAME || detectedName || "the site owner";
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
+// Address of the page for editing the resume and Q&A.
+const DOCS_PAGE = "/" + (process.env.DOCS_PAGE_PATH || "chatbot-docs").replace(/^\/+|\/+$/g, "");
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
   .split(",")
   .map((s) => s.trim().replace(/\/$/, ""))
@@ -179,7 +181,7 @@ const isLocalhost = (origin) => /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\
 
 function originAllowed(origin, req, { lock = false } = {}) {
   if (!origin) return false;
-  // The bot's own pages (/demo, /admin) are always allowed.
+  // The bot's own pages (/demo, the documents page) are always allowed.
   if (origin === `${req.protocol}://${req.get("host")}`) return true;
   if (ALLOWED_ORIGINS.length) return ALLOWED_ORIGINS.includes(origin);
   if (isLocalhost(origin)) return true; // testing on your own computer
@@ -223,9 +225,11 @@ background:#fff;border:1px solid #e3e6ef;border-radius:16px;text-align:center}h1
 p{color:#64748b;margin:0 0 20px;font-size:14.5px}a{display:inline-block;margin:4px;padding:10px 18px;border-radius:10px;
 text-decoration:none;font-weight:600;font-size:14px;background:#4f46e5;color:#fff}a.alt{background:#eef0ff;color:#4f46e5}</style>
 </head><body><main><h1>Chatbot server is running</h1><p>Answering questions about ${ownerName()}.</p>
-<a href="/demo">Try the demo</a><a class="alt" href="/admin">Admin</a></main></body></html>`);
+<a href="/demo">Try the demo</a><a class="alt" href="${DOCS_PAGE}">Edit documents</a></main></body></html>`);
 });
-app.get("/admin", (req, res) => res.sendFile(path.join(here, "public", "admin.html")));
+app.get(DOCS_PAGE, (req, res) => res.sendFile(path.join(here, "public", "admin.html")));
+// Old address of the documents page.
+if (DOCS_PAGE !== "/admin") app.get("/admin", (req, res) => res.redirect(301, DOCS_PAGE));
 app.get("/demo", (req, res) => res.sendFile(path.join(here, "public", "demo.html")));
 // Widget settings, so the site only needs the bare <script> tag.
 app.get("/api/config", (req, res) => {
@@ -432,10 +436,10 @@ app.put("/api/admin/docs", express.json({ limit: "2mb" }), (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Chatbot server on http://localhost:${PORT}  (demo page: /demo, admin: /admin)`);
+  console.log(`Chatbot server on http://localhost:${PORT}  (demo page: /demo, documents page: ${DOCS_PAGE})`);
   if (DEMO_MODE) console.warn("No ABACUS_API_KEY or ANTHROPIC_API_KEY set: running in DEMO MODE (no AI answers).");
   else console.log(`Answers by: ${PROVIDER === "abacus" ? `Abacus.AI (${ABACUS_MODEL})` : `Claude (${MODEL})`}`);
-  if (!ADMIN_TOKEN) console.warn("ADMIN_TOKEN is not set: the /admin page is disabled.");
+  if (!ADMIN_TOKEN) console.warn(`ADMIN_TOKEN is not set: the ${DOCS_PAGE} page is disabled.`);
   if (!ALLOWED_ORIGINS.length) {
     console.log(lockedSite ? `Website: locked to ${lockedSite}` : "Website: will lock to the first site that uses the chat.");
   }
