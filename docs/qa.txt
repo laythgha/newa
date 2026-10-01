@@ -7,7 +7,7 @@ Q: What kind of roles is Layth looking for?
 A: Layth is looking for IT and systems administration roles, such as IT support, help desk, or junior systems administrator positions, and is also a strong fit for full-stack web development and junior AI engineering roles, with hands-on React, Next.js and Firebase experience and a deployed RAG chatbot.
 
 Q: How can I contact Layth?
-A: Email Layth at Laythgha17@gmail.com or connect on LinkedIn.
+A: Email Layth at Laythgha17@gmail.com or connect on LinkedIn: https://www.linkedin.com/in/layth-gharbia
 
 Q: When does Layth graduate?
 A: Layth is completing a B.S. in Computer Science at the University of North Texas, graduating in 2026.

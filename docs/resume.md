@@ -1,5 +1,5 @@
 # Layth Gharbia
-IT Systems Administration · Full-Stack Web Development · AI Engineering · Laythgha17@gmail.com · LinkedIn
+IT Systems Administration · Full-Stack Web Development · AI Engineering · Laythgha17@gmail.com · linkedin.com/in/layth-gharbia
 
 # Summary
 IT Systems Administration professional with 1 year of hands-on support experience and a background in full-stack web development. Skilled at troubleshooting Windows and macOS hardware and software issues, managing Active Directory and Office 365 accounts, and monitoring network performance. Proven ability to streamline operations through technical documentation and proactive system maintenance. Currently training as an AI engineer, and has built and deployed a retrieval-augmented (RAG) AI chatbot for a freelance client.

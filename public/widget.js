@@ -80,7 +80,7 @@
   var BOOKING_URL = /^https:\/\//.test(cfg.bookingUrl || "") ? cfg.bookingUrl : "";
   // Developer credit at the bottom of the chat window ("off" hides it).
   var CREDIT_NAME = cfg.creditName === "off" ? "" : cfg.creditName || "Layth Gharbia";
-  var CREDIT_URL = /^https:\/\//.test(cfg.creditUrl || "") ? cfg.creditUrl : "";
+  var CREDIT_URL = /^https:\/\//.test(cfg.creditUrl || "") ? cfg.creditUrl : CREDIT_NAME === "Layth Gharbia" ? "https://www.linkedin.com/in/layth-gharbia" : "";
   var SIDE = cfg.position === "left" ? "left" : "right";
   var INITIALS = NAME
     ? NAME.split(/\s+/).map(function (w) { return w[0]; }).slice(0, 2).join("").toUpperCase()
