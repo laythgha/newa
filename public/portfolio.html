@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Layth Gharbia</title>
-<meta name="description" content="Layth Gharbia: IT systems administration and full-stack web development. Ask my AI assistant about my experience.">
+<meta name="description" content="Layth Gharbia: IT systems administration, full-stack web development and AI engineering. Ask my AI assistant about my experience.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -100,7 +100,8 @@
   .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 30px; }
   .tags span { font-size: 13px; padding: 6px 12px; border-radius: 8px; background: #fff; border: 1px solid var(--border); }
   @media (max-width: 720px) { .skills { grid-template-columns: 1fr; } }
-  .groups { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .groups { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  @media (max-width: 1100px) { .groups { grid-template-columns: repeat(2, 1fr); } }
   .group { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 20px; transition: transform .2s, box-shadow .2s; }
   .group:hover { transform: translateY(-3px); box-shadow: 0 16px 34px -18px rgba(79,70,229,.45); }
   .group .ic { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-size: 18px; background: var(--tint); margin-bottom: 12px; }
@@ -119,6 +120,9 @@
   .feature .stack { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
   .feature .stack span { font-size: 12px; padding: 3px 9px; border-radius: 6px; background: var(--tint); color: var(--a1); }
   @media (max-width: 760px) { .feature { grid-template-columns: 1fr; } .feature .cover { min-height: 140px; } }
+  .feature .cover.ai { background: linear-gradient(135deg, #4f46e5, #7c3aed); }
+  .feature .tag { display: inline-block; vertical-align: middle; margin-left: 8px; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: #dcfce7; color: #15803d; }
+  .feature .try { margin-top: 16px; height: 40px; font-size: 14px; }
   .edu { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 20px 22px; }
   .edu h3 { font-size: 16.5px; font-weight: 700; }
   .edu p { color: var(--muted); font-size: 14.5px; margin-top: 2px; }
@@ -182,9 +186,9 @@
 <header class="hero">
   <div class="wrap">
     <div>
-      <span class="badge"><b></b>Open to IT &amp; web development roles</span>
+      <span class="badge"><b></b>Open to IT, web &amp; AI roles</span>
       <h1>Hi, I'm Layth <span aria-hidden="true">👋</span><br><span class="hl">IT Systems Administration</span><br>keeping <span class="typed" id="typed">systems running</span></h1>
-      <p class="lead">IT support and systems administration with a full-stack web development background. I troubleshoot Windows and macOS, manage Active Directory and Office 365 accounts, and build React and Firebase apps.</p>
+      <p class="lead">IT support and systems administration with a full-stack web background, now training as an AI engineer. I troubleshoot Windows and macOS, manage Active Directory and Office 365, build React and Firebase apps, and ship AI assistants like the one in the corner of this page.</p>
       <div class="cta">
         <button class="btn primary" onclick="ResumeChatbot.open()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l.9-5.4A8 8 0 1 1 21 12z"/></svg>
@@ -203,14 +207,14 @@
     <div class="profile">
       <div class="photo"><span>LG</span></div>
       <div class="float f1"><span class="ic">🎓</span><div>B.S. Computer Science<small>University of North Texas · 2026</small></div></div>
-      <div class="float f2"><span class="ic">🤖</span><div>UAT lead<small>AI vehicle pricing system</small></div></div>
+      <div class="float f2"><span class="ic">🤖</span><div>RAG chatbot<small>Built &amp; shipped for a client</small></div></div>
     </div>
   </div>
   <div class="wrap stats-wrap">
     <div class="stats" style="margin-top:56px">
       <div class="stat reveal"><b>1+ yr</b><span>Hands-on IT support</span></div>
       <div class="stat reveal"><b>4+ yrs</b><span>Leading teams</span></div>
-      <div class="stat reveal"><b>5</b><span>Programming languages</span></div>
+      <div class="stat reveal"><b>1</b><span>AI chatbot live for a client</span></div>
       <div class="stat reveal"><b>2026</b><span>B.S. Computer Science</span></div>
     </div>
   </div>
@@ -223,7 +227,8 @@
     <div class="groups">
       <div class="group reveal"><div class="ic">🖥️</div><h3>IT &amp; Systems</h3><div class="chips"><span>Windows</span><span>macOS</span><span>Active Directory</span><span>Office 365</span><span>Networking &amp; Wi-Fi</span><span>Workstation setup</span><span>User access</span></div></div>
       <div class="group reveal"><div class="ic">⚛️</div><h3>Web Development</h3><div class="chips"><span>TypeScript</span><span>JavaScript</span><span>React.js</span><span>Next.js</span><span>HTML</span><span>REST APIs</span><span>Responsive UI</span></div></div>
-      <div class="group reveal"><div class="ic">🔥</div><h3>Backend, Data &amp; Process</h3><div class="chips"><span>Firebase</span><span>Firestore</span><span>MySQL</span><span>Python</span><span>C++</span><span>Git</span><span>Vercel</span><span>Agile/Scrum</span></div></div>
+      <div class="group reveal"><div class="ic">🧠</div><h3>AI Engineering</h3><div class="chips"><span>LLM APIs</span><span>RAG</span><span>BM25 search</span><span>Prompt engineering</span><span>Streaming</span><span>Abacus.AI</span><span>Claude API</span></div></div>
+      <div class="group reveal"><div class="ic">🔥</div><h3>Backend, Data &amp; Process</h3><div class="chips"><span>Node.js</span><span>Express</span><span>Firebase</span><span>Firestore</span><span>MySQL</span><span>Python</span><span>C++</span><span>Git</span><span>Vercel</span><span>Render</span><span>Agile/Scrum</span></div></div>
     </div>
   </div>
 </section>
@@ -233,6 +238,8 @@
     <p class="kicker mono">// experience</p>
     <h2>Where I've worked</h2>
     <div class="timeline">
+      <div class="job reveal"><div class="head"><h3>Freelance AI / Web Developer · <em>Self-employed</em></h3><span class="when mono">Oct 2026 – present</span></div>
+        <ul><li>Built and deployed a RAG-based AI chatbot that answers recruiters' questions from a client's resume and Q&amp;A documents.</li><li>Designed the retrieval layer (BM25 search, indexed once and cached) and the LLM integration with streamed answers.</li><li>Shipped a one-line embeddable chat widget and an admin panel with Word upload; deployed on Render with access locking and rate limiting.</li></ul></div>
       <div class="job reveal"><div class="head"><h3>IT / Systems Administration Intern · <em>Texas Auto Buy</em></h3><span class="when mono">Nov 2024 – Jan 2026</span></div>
         <ul><li>Day-to-day IT support: diagnosed and resolved workstation, software, network, Wi-Fi and printer issues, escalating to vendors and ISPs.</li><li>Set up employee workstations and managed user accounts, permissions and password resets.</li><li>Subject matter expert and business analyst for an AI-driven vehicle pricing system; led user acceptance testing before release.</li><li>Documented common fixes and repeatable setup steps for new devices and users.</li></ul></div>
       <div class="job reveal"><div class="head"><h3>Manager · <em>Paciugo</em></h3><span class="when mono">Jul 2020 – Jan 2023</span></div>
@@ -248,6 +255,16 @@
     <p class="kicker mono">// projects</p>
     <h2>Selected work</h2>
     <div class="feature reveal">
+      <div class="cover ai">🤖</div>
+      <div class="body">
+        <h3>AI Resume Chatbot <span class="tag">Client project · Live</span></h3>
+        <p>A retrieval-augmented (RAG) assistant that answers recruiters' questions about a candidate from their resume and Q&amp;A, installed on any website with one line of JavaScript. You're looking at it: it's the robot in the corner.</p>
+        <ul><li>Documents are chunked and indexed once with BM25, cached, and re-indexed only when they change.</li><li>The most relevant passages go to an LLM (Abacus.AI RouteLLM, Claude API support) that streams a grounded answer.</li><li>Shadow-DOM widget with an animated mascot; admin panel with Word (.docx) upload, editable from the client's own site.</li><li>Deployed on Render with persistent storage, per-site access locking and rate limiting.</li></ul>
+        <div class="stack"><span>Node.js</span><span>Express</span><span>RAG</span><span>BM25</span><span>LLM APIs</span><span>JavaScript</span><span>Render</span></div>
+        <button class="btn primary try" onclick="ResumeChatbot.ask('Tell me about the AI chatbot project.')">Try it now</button>
+      </div>
+    </div>
+    <div class="feature reveal" style="margin-top:18px">
       <div class="cover">🩺</div>
       <div class="body">
         <h3>Doctor Finder</h3>
@@ -281,7 +298,7 @@
 <script>
   // Typing effect in the hero
   (function () {
-    var words = ["systems running", "users productive", "web apps shipping", "teams supported"];
+    var words = ["systems running", "AI assistants helpful", "web apps shipping", "users productive"];
     var el = document.getElementById("typed"), w = 0, i = words[0].length, del = true;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     setTimeout(function tick() {

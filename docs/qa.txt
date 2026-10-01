@@ -4,7 +4,7 @@
 # (remove the # in front) so the bot can answer them too.
 
 Q: What kind of roles is Layth looking for?
-A: Layth is looking for IT and systems administration roles, such as IT support, help desk, or junior systems administrator positions, and is also a strong fit for full-stack or front-end web development roles thanks to hands-on React, Next.js, and Firebase experience.
+A: Layth is looking for IT and systems administration roles, such as IT support, help desk, or junior systems administrator positions, and is also a strong fit for full-stack web development and junior AI engineering roles, with hands-on React, Next.js and Firebase experience and a deployed RAG chatbot.
 
 Q: How can I contact Layth?
 A: Email Layth at Laythgha17@gmail.com or connect on LinkedIn.
@@ -22,7 +22,13 @@ Q: What is the Doctor Finder project?
 A: Doctor Finder is a web app Layth built with a team in Agile/Scrum sprints. It lets users search and compare doctors by specialty, location and insurance, with a React front end and a Firebase back end (Firestore, Auth, Cloud Functions), real-time updates, and CI/CD on Vercel.
 
 Q: Has Layth worked with AI systems?
-A: Yes. At Texas Auto Buy, Layth was the subject matter expert and business analyst for an AI-driven vehicle pricing system, led user acceptance testing of its AI-generated pricing features, and supported staff using an AI-based vehicle acquisition tool.
+A: Yes. Layth built and deployed a RAG-based AI chatbot for a freelance client (this assistant is built the same way), is currently training as an AI engineer, and at Texas Auto Buy was the subject matter expert and business analyst for an AI-driven vehicle pricing system, leading user acceptance testing of its AI-generated pricing features.
+
+Q: Tell me about the AI chatbot project.
+A: Layth built an AI resume chatbot for a client as a freelance project. It's a retrieval-augmented (RAG) assistant: the client's resume and Q&A are indexed once with BM25 search, the most relevant parts are retrieved for each question, and an LLM (via Abacus.AI RouteLLM) writes a streamed answer. It installs on any website with one line of JavaScript, has an animated robot mascot, and includes an admin panel where the client uploads Word files to update it. It's deployed on Render with access locking and rate limiting.
+
+Q: Is Layth training in AI?
+A: Yes, Layth is currently training to become an AI engineer, alongside a B.S. in Computer Science at the University of North Texas.
 
 # --- Fill these in (remove the # at the start of both lines) ---
 # Q: Is Layth open to relocating?
