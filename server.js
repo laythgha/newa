@@ -8,6 +8,8 @@ import {
   DOCS_DIR,
   RESUME_FILES,
   QA_FILES,
+  INDEX_FILE,
+  guessOwnerName,
   loadOrBuildIndex,
   readSources,
   search,
@@ -17,7 +19,10 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 
 const PORT = Number(process.env.PORT) || 3000;
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5-5";
-const OWNER_NAME = process.env.OWNER_NAME || "the site owner";
+// The person's name: OWNER_NAME if set, otherwise read from the top of the resume
+// (updated whenever the resume changes).
+let detectedName = "";
+const ownerName = () => process.env.OWNER_NAME || detectedName || "the site owner";
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
   .split(",")
@@ -46,10 +51,12 @@ let index;
 function refreshIndex(reason) {
   const result = loadOrBuildIndex();
   index = result.index;
+  detectedName = guessOwnerName(readSources().resume);
   const n = (src) => index.chunks.filter((c) => c.source === src).length;
   console.log(
     `[index] ${result.rebuilt ? "rebuilt" : "loaded from cache"} (${reason}): ` +
-      `${n("resume")} resume sections, ${n("qa")} Q&A pairs`,
+      `${n("resume")} resume sections, ${n("qa")} Q&A pairs` +
+      (process.env.OWNER_NAME ? "" : `; name from resume: ${detectedName || "(not found)"}`),
   );
 }
 // When DOCS_DIR points somewhere else (e.g. a persistent disk on the host), seed it
@@ -78,7 +85,7 @@ fs.watch(DOCS_DIR, () => {
 
 // ---------- prompt ----------
 
-const SYSTEM_PROMPT = `You are the assistant on ${OWNER_NAME}'s personal website. Visitors (often recruiters or hiring managers) ask you about ${OWNER_NAME}'s background, experience, skills, and availability.
+const systemPrompt = (OWNER_NAME) => `You are the assistant on ${OWNER_NAME}'s personal website. Visitors (often recruiters or hiring managers) ask you about ${OWNER_NAME}'s background, experience, skills, and availability.
 
 Each visitor message comes with excerpts from ${OWNER_NAME}'s resume and from a list of prepared questions and answers, inside <context>. Answer only from those excerpts and the conversation so far. When a prepared answer fits the question, prefer it and keep its meaning. If the excerpts don't cover the question, say you don't have that information and suggest contacting ${OWNER_NAME} directly; never guess or invent details such as dates, employers, salaries, or contact information.
 
@@ -146,12 +153,43 @@ setInterval(() => {
   }
 }, RATE_LIMIT.windowMs).unref();
 
-function originAllowed(origin, req) {
-  if (!ALLOWED_ORIGINS.length) return true; // not configured: allow all (local testing)
+// Which websites may use the bot. With ALLOWED_ORIGINS set, exactly those. Without
+// it, the first website that uses the chat is remembered (in site.json next to the
+// index) and from then on only that site, and its www / non-www twin, is allowed.
+// The admin page shows the locked site and can unlock it.
+const SITE_FILE = path.join(path.dirname(INDEX_FILE), "site.json");
+let lockedSite = null;
+try {
+  lockedSite = JSON.parse(fs.readFileSync(SITE_FILE, "utf8")).origin || null;
+} catch {}
+
+function saveLockedSite(origin) {
+  lockedSite = origin;
+  fs.mkdirSync(path.dirname(SITE_FILE), { recursive: true });
+  if (origin) fs.writeFileSync(SITE_FILE, JSON.stringify({ origin, lockedAt: new Date().toISOString() }));
+  else fs.rmSync(SITE_FILE, { force: true });
+}
+
+function sameSite(a, b) {
+  const strip = (o) => o.replace(/^(https?:\/\/)www\./, "$1");
+  return strip(a) === strip(b);
+}
+
+const isLocalhost = (origin) => /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(origin);
+
+function originAllowed(origin, req, { lock = false } = {}) {
   if (!origin) return false;
   // The bot's own pages (/demo, /admin) are always allowed.
   if (origin === `${req.protocol}://${req.get("host")}`) return true;
-  return ALLOWED_ORIGINS.includes(origin);
+  if (ALLOWED_ORIGINS.length) return ALLOWED_ORIGINS.includes(origin);
+  if (isLocalhost(origin)) return true; // testing on your own computer
+  if (!lockedSite) {
+    if (!lock) return true;
+    saveLockedSite(origin);
+    console.log(`[site] the bot is now locked to ${origin}`);
+    return true;
+  }
+  return sameSite(origin, lockedSite);
 }
 
 function adminAuthorized(req) {
@@ -181,9 +219,9 @@ app.get("/demo", (req, res) => res.sendFile(path.join(here, "public", "demo.html
 // Widget settings, so the site only needs the bare <script> tag.
 app.get("/api/config", (req, res) => {
   res.set("Access-Control-Allow-Origin", "*");
-  res.set("Cache-Control", "public, max-age=300");
+  res.set("Cache-Control", "public, max-age=60");
   res.json({
-    name: process.env.OWNER_NAME || "",
+    name: process.env.OWNER_NAME || detectedName,
     subtitle: process.env.WIDGET_SUBTITLE || "",
     greeting: process.env.WIDGET_GREETING || "",
     suggestions: process.env.WIDGET_SUGGESTIONS || "",
@@ -195,8 +233,10 @@ app.get("/api/config", (req, res) => {
 app.get("/health", (req, res) => res.json({ ok: true, indexBuiltAt: index.builtAt }));
 
 app.use("/api/chat", (req, res, next) => {
+  // CORS headers go to every site so a blocked one gets a readable message; the
+  // real check (and the first-site lock) happens in the POST handler below.
   const origin = req.get("origin");
-  if (origin && originAllowed(origin, req)) {
+  if (origin) {
     res.set("Access-Control-Allow-Origin", origin);
     res.set("Vary", "Origin");
     res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -208,7 +248,9 @@ app.use("/api/chat", (req, res, next) => {
 
 app.post("/api/chat", express.json({ limit: "64kb" }), async (req, res) => {
   const origin = req.get("origin");
-  if (origin && !originAllowed(origin, req)) return res.status(403).json({ error: "Origin not allowed" });
+  if (origin && !originAllowed(origin, req, { lock: true })) {
+    return res.status(403).json({ error: "This chat isn't enabled for this website." });
+  }
   if (rateLimited(req.ip)) {
     return res.status(429).json({ error: "Too many messages. Please try again in a few minutes." });
   }
@@ -265,7 +307,7 @@ async function streamClaude(apiMessages, send, signal) {
       // If the model declines a request, the API retries it on a fallback model.
       betas: ["server-side-fallback-2026-07-01"],
       fallbacks: "default",
-      system: SYSTEM_PROMPT,
+      system: systemPrompt(ownerName()),
       messages: apiMessages,
     },
     { signal },
@@ -281,7 +323,7 @@ async function streamClaude(apiMessages, send, signal) {
   const final = await stream.finalMessage();
   if (final.stop_reason === "refusal") {
     send({ type: "reset" });
-    send({ type: "text", text: `Sorry, I can't help with that. Feel free to ask about ${OWNER_NAME}'s experience or skills.` });
+    send({ type: "text", text: `Sorry, I can't help with that. Feel free to ask about ${ownerName()}'s experience or skills.` });
   }
 }
 
@@ -295,7 +337,7 @@ async function streamAbacus(apiMessages, send, signal) {
       model: ABACUS_MODEL,
       stream: true,
       max_tokens: 1500,
-      messages: [{ role: "system", content: SYSTEM_PROMPT }, ...apiMessages],
+      messages: [{ role: "system", content: systemPrompt(ownerName()) }, ...apiMessages],
     }),
     signal,
   });
@@ -339,9 +381,23 @@ function sendDemoAnswer(res, hits) {
 
 // ----- admin: view and replace the two documents -----
 
+app.delete("/api/admin/site", (req, res) => {
+  if (!adminAuthorized(req)) return res.status(401).json({ error: "Wrong admin password" });
+  saveLockedSite(null);
+  console.log("[site] unlocked by admin");
+  res.json({ ok: true });
+});
+
 app.get("/api/admin/docs", (req, res) => {
   if (!adminAuthorized(req)) return res.status(401).json({ error: "Wrong admin password" });
-  res.json({ ...readSources(), indexBuiltAt: index.builtAt });
+  res.json({
+    ...readSources(),
+    indexBuiltAt: index.builtAt,
+    name: ownerName(),
+    nameSource: process.env.OWNER_NAME ? "setting" : detectedName ? "resume" : "none",
+    site: ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS.join(", ") : lockedSite,
+    siteSource: ALLOWED_ORIGINS.length ? "setting" : lockedSite ? "locked" : "none",
+  });
 });
 
 app.put("/api/admin/docs", express.json({ limit: "2mb" }), (req, res) => {
@@ -357,6 +413,7 @@ app.put("/api/admin/docs", express.json({ limit: "2mb" }), (req, res) => {
   refreshIndex("admin update");
   res.json({
     ok: true,
+    name: ownerName(),
     indexBuiltAt: index.builtAt,
     resumeSections: index.chunks.filter((c) => c.source === "resume").length,
     qaPairs: index.chunks.filter((c) => c.source === "qa").length,
@@ -368,5 +425,7 @@ app.listen(PORT, () => {
   if (DEMO_MODE) console.warn("No ABACUS_API_KEY or ANTHROPIC_API_KEY set: running in DEMO MODE (no AI answers).");
   else console.log(`Answers by: ${PROVIDER === "abacus" ? `Abacus.AI (${ABACUS_MODEL})` : `Claude (${MODEL})`}`);
   if (!ADMIN_TOKEN) console.warn("ADMIN_TOKEN is not set: the /admin page is disabled.");
-  if (!ALLOWED_ORIGINS.length) console.warn("ALLOWED_ORIGINS is not set: any website can use this bot.");
+  if (!ALLOWED_ORIGINS.length) {
+    console.log(lockedSite ? `Website: locked to ${lockedSite}` : "Website: will lock to the first site that uses the chat.");
+  }
 });

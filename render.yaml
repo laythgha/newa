@@ -23,12 +23,9 @@ services:
       # Password for the /admin page.
       - key: ADMIN_TOKEN
         generateValue: true
-      # The client's name, e.g. "Alex Smith".
-      - key: OWNER_NAME
-        sync: false
-      # The client's website(s), comma separated, e.g. "https://alexsmith.com,https://www.alexsmith.com".
-      - key: ALLOWED_ORIGINS
-        sync: false
+      # Optional overrides (add them later under Environment if needed):
+      #   OWNER_NAME       - otherwise read from the top of the resume
+      #   ALLOWED_ORIGINS  - otherwise the bot locks to the first website that uses it
       # Keep the documents and index on the persistent disk so admin-page edits survive deploys.
       - key: DOCS_DIR
         value: /var/data/docs

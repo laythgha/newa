@@ -109,8 +109,8 @@ and restart to switch to real answers.
 | `ABACUS_MODEL` | Model on Abacus (default `route-llm`, which picks a model per question) |
 | `ANTHROPIC_API_KEY` | Claude API key, used when no Abacus key is set. With neither key the bot runs in demo mode |
 | `ADMIN_TOKEN` | Password for `/admin`. If empty, the admin page is disabled |
-| `ALLOWED_ORIGINS` | Comma-separated site addresses allowed to use the bot, e.g. `https://janedoe.com,https://www.janedoe.com`. Set this in production so other sites can't use your API key |
-| `OWNER_NAME` | Your name, so the bot refers to you correctly |
+| `ALLOWED_ORIGINS` | Optional. Comma-separated sites allowed to use the bot. If empty, the bot locks itself to the first website that uses the chat (shown on the admin page, with an Unlock button). Your own computer (`localhost`) always works for testing |
+| `OWNER_NAME` | Optional. The person's name. If empty, it's read from the first line of the resume |
 | `PORT` | Port to listen on (default 3000) |
 | `CLAUDE_MODEL` | Model to use (default `claude-sonnet-5-5`) |
 | `DOCS_DIR`, `INDEX_FILE` | Where the documents and the saved index live (default `docs/`, `data/index.json`) |
@@ -124,8 +124,9 @@ The repo includes `render.yaml`, so Render sets most things up for you:
    this GitHub repo (and branch).
 3. Render asks for the values left blank in `render.yaml`:
    - `ABACUS_API_KEY` (or `ANTHROPIC_API_KEY`)
-   - `OWNER_NAME`, e.g. `Alex Smith`
-   - `ALLOWED_ORIGINS`, e.g. `https://alexsmith.com,https://www.alexsmith.com`
+
+   The name and website don't need setting: the name is read from the top of the resume, and
+   the bot locks itself to the first website that uses it.
 4. Click **Apply**. Render builds the service, attaches a 1 GB persistent disk, and generates
    `ADMIN_TOKEN` (the `/admin` password). Find it under the service's **Environment** tab.
 5. Render gives the service an address like `https://resume-chatbot.onrender.com`. The line for

@@ -27,6 +27,12 @@
   button:disabled { opacity: .5; cursor: default; }
   #status { font-size: 14px; color: var(--muted); }
   #editor[hidden] { display: none; }
+  .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .facts { grid-template-columns: 1fr; } }
+  .fact b { display: block; font-size: 13px; color: var(--muted); font-weight: 500; margin-bottom: 4px; }
+  .fact .v { font-size: 15px; font-weight: 600; word-break: break-all; }
+  .fact .hint { display: block; margin-top: 4px; }
+  button.link { background: none; color: var(--accent); padding: 0; margin-left: 8px; font-size: 13px; }
 </style>
 </head>
 <body>
@@ -43,6 +49,10 @@
   </div>
 
   <div id="editor" hidden>
+    <div class="card facts">
+      <div class="fact"><b>Name the bot uses</b><span class="v" id="name"></span><span class="hint" id="nameHint"></span></div>
+      <div class="fact"><b>Website the bot works on</b><span class="v" id="site"></span><button class="link" id="unlock" hidden>Unlock</button><span class="hint" id="siteHint"></span></div>
+    </div>
     <div class="grid">
       <div class="card">
         <label for="resume">Resume <span class="hint">plain text; start sections with "# Heading"</span></label>
@@ -64,10 +74,10 @@
   const $ = (id) => document.getElementById(id);
   try { $("token").value = sessionStorage.getItem("adminToken") || ""; } catch {}
 
-  async function call(method, body) {
+  async function call(method, body, url) {
     const token = $("token").value;
     try { sessionStorage.setItem("adminToken", token); } catch {}
-    const res = await fetch("/api/admin/docs", {
+    const res = await fetch(url || "/api/admin/docs", {
       method,
       headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
       body: body ? JSON.stringify(body) : undefined,
@@ -77,6 +87,30 @@
     return data;
   }
 
+  function showFacts(d) {
+    $("name").textContent = d.name;
+    $("nameHint").textContent = {
+      setting: "Set by OWNER_NAME on the server.",
+      resume: "Read from the top of your resume. Change the first line of the resume to change it.",
+      none: "Not found: put your name on the first line of the resume.",
+    }[d.nameSource] || "";
+    $("site").textContent = d.site || "Not locked yet";
+    $("unlock").hidden = d.siteSource !== "locked";
+    $("siteHint").textContent = {
+      setting: "Set by ALLOWED_ORIGINS on the server.",
+      locked: "The bot locked itself to the first website that used it. Other sites are refused. Unlock if you move to a new address.",
+      none: "The first website that uses the chat will be remembered, and other sites refused after that.",
+    }[d.siteSource] || "";
+  }
+
+  $("unlock").onclick = async () => {
+    if (!confirm("Unlock? The next website that uses the chat will become the allowed site.")) return;
+    try {
+      await call("DELETE", null, "/api/admin/site");
+      showFacts(await call("GET"));
+    } catch (e) { $("msg").textContent = e.message; }
+  };
+
   $("load").onclick = async () => {
     $("msg").textContent = "";
     try {
@@ -84,6 +118,7 @@
       $("resume").value = data.resume;
       $("qa").value = data.qa;
       $("editor").hidden = false;
+      showFacts(data);
       $("status").textContent = "Index last built " + new Date(data.indexBuiltAt).toLocaleString();
     } catch (e) { $("msg").textContent = e.message; }
   };
@@ -94,6 +129,7 @@
     try {
       const r = await call("PUT", { resume: $("resume").value, qa: $("qa").value });
       $("status").textContent = `Saved. The bot now knows ${r.resumeSections} resume sections and ${r.qaPairs} Q&A pairs.`;
+      showFacts(await call("GET"));
     } catch (e) { $("status").textContent = e.message; }
     $("save").disabled = false;
   };
